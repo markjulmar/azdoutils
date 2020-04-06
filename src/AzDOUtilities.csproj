@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackOnBuild>true</PackOnBuild>
+    <PackageId>azdoutilities</PackageId>
+    <PackageVersion>1.0-prerelease</PackageVersion>
+    <Authors>Mark Smith</Authors>
+    <Description>A simple wrapper library around Azure DevOps REST APIs.</Description>
+    <Copyright>(C) 2018-2020 julmar.com</Copyright>
+    <Owners>julmar.com</Owners>
+    <PackageProjectUrl>https://github.com/markjulmar/AzDOUtils</PackageProjectUrl>
+    <PackageReleaseNotes>1.0 preview version</PackageReleaseNotes>
+    <Summary>Wrapper around Azure DevOps</Summary>
+    <Title>Azure DevOps Utility Library</Title>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.166.0-preview" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Converters\" />
+    <Folder Include="Attributes\" />
+    <Folder Include="Linq\" />
+  </ItemGroup>
+</Project>
