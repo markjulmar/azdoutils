@@ -1,6 +1,10 @@
 ﻿# Azure DevOps Utilities
 
+![.NET Core](https://github.com/markjulmar/azdoutils/workflows/.NET%20Core/badge.svg)
+
 The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps REST API. It gives access to a low-level API through the `IAzureDevOpsRawService` which returns `WebApi.Models.WorkItem` objects. The `IAzureDevOpsService` interface is preferred as it returns full wrapper objects (`AzDOUtilities.WorkItem`) with change tracking support.
+
+It's packaged as a [NuGet package](https://www.nuget.org/packages/azdoutilities/).
 
 ## AzureDevOpsFactory
 
