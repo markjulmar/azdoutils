@@ -1,4 +1,4 @@
-name: .NET Core
+name: Build and Publish Azure DevOps Utils
 
 on:
   push:
@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
@@ -26,3 +24,10 @@ jobs:
     - name: Test
       working-directory: ./src
       run: dotnet test --no-restore --verbosity normal
+    - name: Publish nuget
+      working-directory: ./src
+      run: |
+           for f in ./bin/Release/*.nupkg
+           do
+             curl -vX PUT -u "mark_julmar:${{ secrets.nugetkey }}" -F package=@$f https://nuget.pkg.github.com/mark_julmar/
+           done
