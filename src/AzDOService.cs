@@ -6,6 +6,8 @@ using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
+using Wit = Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem;
+
 namespace AzDOUtilities
 {
     sealed partial class AzDOService : IAzureDevOpsService
@@ -90,7 +92,8 @@ namespace AzDOUtilities
                 });
             }
 
-            Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem wit = await UpdateAsync(owner.Id.Value, patchDocument, false, true).ConfigureAwait(false);
+            var wit = await UpdateAsync(owner.Id.Value, patchDocument, false, true)
+                              .ConfigureAwait(false);
             owner.Initialize(wit);
         }
 
@@ -104,8 +107,8 @@ namespace AzDOUtilities
 
             using var mc = log?.Enter(new object[] { owner.Id });
 
-            var relatedIds = (await GetRelatedIdsAsync(owner.Id.Value)).ToList();
-            IEnumerable<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> wits;
+            var relatedIds = (await GetRelatedIdsAsync(owner.Id.Value).ConfigureAwait(false)).ToList();
+            IEnumerable<Wit> wits;
             using (var client = CreateWorkItemClient())
             {
                 wits = await GetWorkItemsAsync(client, relatedIds, ReflectionHelpers.AllFields, null).ConfigureAwait(false);
@@ -119,7 +122,7 @@ namespace AzDOUtilities
             log?.WriteLine(LogLevel.Query, $"AzDOService.ExecuteQueryAsync: {query}");
 
             Wiql wiql = new Wiql { Query = query };
-            IEnumerable<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> workItems = null;
+            IEnumerable<Wit> workItems = null;
 
             using (var client = CreateWorkItemClient())
             {
@@ -144,8 +147,8 @@ namespace AzDOUtilities
 
             using var mc = log?.Enter(new object[] { parent.Id });
 
-            var childIds = (await GetChildIdsAsync(parent.Id.Value)).ToList();
-            IEnumerable<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> workItems = null;
+            var childIds = (await GetChildIdsAsync(parent.Id.Value).ConfigureAwait(false)).ToList();
+            IEnumerable<Wit> workItems = null;
 
             using (var client = CreateWorkItemClient())
             {

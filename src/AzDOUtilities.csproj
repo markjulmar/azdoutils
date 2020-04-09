@@ -14,6 +14,7 @@
     <Summary>Wrapper around Azure DevOps</Summary>
     <Title>Azure DevOps Utility Library</Title>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <ReleaseVersion>0.2</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>

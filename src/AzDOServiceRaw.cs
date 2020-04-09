@@ -8,6 +8,7 @@ using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
+using Wit = Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem;
 
 namespace AzDOUtilities
 {
@@ -29,7 +30,7 @@ namespace AzDOUtilities
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw);
             using var client = CreateProjectClient();
-            return await client.GetProjects();
+            return await client.GetProjects().ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<WorkItemClassificationNode>> GetAreasAsync(string projectName)
@@ -40,9 +41,9 @@ namespace AzDOUtilities
             using (var client = CreateProjectClient())
             using (var workItemTracking = CreateWorkItemClient())
             {
-                TeamProjectReference project = await client.GetProject(projectName);
+                TeamProjectReference project = await client.GetProject(projectName).ConfigureAwait(false);
                 WorkItemClassificationNode currentIteration = await workItemTracking.GetClassificationNodeAsync(
-                            project.Name, TreeStructureGroup.Areas, depth: 50);
+                            project.Name, TreeStructureGroup.Areas, depth: 50).ConfigureAwait(false);
                 AddChildIterations(nodes, currentIteration);
             }
 
@@ -57,9 +58,9 @@ namespace AzDOUtilities
             using (var client = CreateProjectClient())
             using (var workItemTracking = CreateWorkItemClient())
             {
-                TeamProjectReference project = await client.GetProject(projectName);
+                TeamProjectReference project = await client.GetProject(projectName).ConfigureAwait(false);
                 WorkItemClassificationNode currentIteration = await workItemTracking.GetClassificationNodeAsync(
-                            project.Name, TreeStructureGroup.Iterations, depth: 20);
+                            project.Name, TreeStructureGroup.Iterations, depth: 20).ConfigureAwait(false);
                 AddChildIterations(nodes, currentIteration);
             }
             return nodes;
@@ -81,7 +82,8 @@ namespace AzDOUtilities
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw, new object[] { project, workItemType });
             using var client = CreateWorkItemClient();
-            return await client.GetWorkItemTypeFieldsAsync(project, workItemType, WorkItemTypeFieldsExpandLevel.All).ConfigureAwait(false);
+            return await client.GetWorkItemTypeFieldsAsync(project, workItemType, WorkItemTypeFieldsExpandLevel.All)
+                               .ConfigureAwait(false);
         }
 
         static string StripRevisionFromUrl(string url)
@@ -99,7 +101,7 @@ namespace AzDOUtilities
         {
             using var mc = log?.Enter(LogLevel.RelatedApis, id);
             using var client = CreateWorkItemClient();
-            Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
+            var workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
             if (workItem.Relations == null)
             {
                 return new List<int>();
@@ -123,7 +125,7 @@ namespace AzDOUtilities
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw, id);
             using var client = CreateWorkItemClient();
-            Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
+            var workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
             var relation = workItem.Relations?.SingleOrDefault(r => r.Rel == "System.LinkTypes.Hierarchy-Reverse");
             if (relation != null)
             {
@@ -139,7 +141,7 @@ namespace AzDOUtilities
         {
             using var mc = log?.Enter(LogLevel.RelatedApis, id);
             using var client = CreateWorkItemClient();
-            Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
+            var workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
             if (workItem.Relations == null)
                 return new List<int>();
 
@@ -157,10 +159,10 @@ namespace AzDOUtilities
             return list;
         }
 
-        private async Task<IEnumerable<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem>> GetWorkItemsAsync(WorkItemTrackingHttpClient client, List<int> ids, string[] fields, DateTime? asOf)
+        private async Task<IEnumerable<Wit>> GetWorkItemsAsync(WorkItemTrackingHttpClient client, List<int> ids, string[] fields, DateTime? asOf)
         {
             const int nSize = 200;
-            List<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> workItems = new List<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem>();
+            var workItems = new List<Wit>();
 
             // Chunk the retrieval.
             for (int i = 0; i < ids.Count; i += nSize)
@@ -178,10 +180,10 @@ namespace AzDOUtilities
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw, new object[] { id, top, skip });
             using var client = CreateWorkItemClient();
-            return await client.GetUpdatesAsync(id, top, skip);
+            return await client.GetUpdatesAsync(id, top, skip).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem>> QueryAsync(string query, string[] fields)
+        public async Task<IEnumerable<Wit>> QueryAsync(string query, string[] fields)
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw, new object[] { query, fields });
             Wiql wiql = new Wiql { Query = query };
@@ -197,17 +199,17 @@ namespace AzDOUtilities
                 return await GetWorkItemsAsync(client, ids, fields, queryResult.AsOf).ConfigureAwait(false);
             }
 
-            return Enumerable.Empty<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem>();
+            return Enumerable.Empty<Wit>();
         }
 
-        async Task<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> IAzureDevOpsRawService.GetAsync(int id)
+        async Task<Wit> IAzureDevOpsRawService.GetAsync(int id)
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw, id);
             using var client = CreateWorkItemClient();
             return await client.GetWorkItemAsync(id, expand: WorkItemExpand.All).ConfigureAwait(false); ;
         }
 
-        public async Task<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> AddAsync(JsonPatchDocument patchDocument, string projectName, string workItemType, bool? validateOnly, bool? bypassRules)
+        public async Task<Wit> AddAsync(JsonPatchDocument patchDocument, string projectName, string workItemType, bool? validateOnly, bool? bypassRules)
         {
             if (this.ValidateOnly)
                 validateOnly = true;
@@ -216,10 +218,11 @@ namespace AzDOUtilities
             log?.Dump(patchDocument);
 
             using var client = CreateWorkItemClient();
-            return await client.CreateWorkItemAsync(patchDocument, projectName, workItemType, validateOnly, bypassRules);
+            return await client.CreateWorkItemAsync(patchDocument, projectName, workItemType, validateOnly, bypassRules)
+                               .ConfigureAwait(false);
         }
 
-        public async Task<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> UpdateAsync(int id, JsonPatchDocument patchDocument, bool? validateOnly, bool? bypassRules)
+        public async Task<Wit> UpdateAsync(int id, JsonPatchDocument patchDocument, bool? validateOnly, bool? bypassRules)
         {
             if (this.ValidateOnly)
                 validateOnly = true;
@@ -228,19 +231,23 @@ namespace AzDOUtilities
             log?.Dump(patchDocument);
 
             using var client = CreateWorkItemClient();
-            return await client.UpdateWorkItemAsync(patchDocument, id, validateOnly, bypassRules);
+            return await client.UpdateWorkItemAsync(patchDocument, id, validateOnly, bypassRules)
+                               .ConfigureAwait(false);
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
             using var mc = log?.Enter(LogLevel.EnterExitRaw, new object[] { $"id:{id}", $"validateOnly:{ValidateOnly}" });
 
-            if (this.ValidateOnly)
-                return false;
+            if (!this.ValidateOnly)
+            {
+                using var client = CreateWorkItemClient();
+                var wit = await client.DeleteWorkItemAsync(id, destroy: false)
+                                      .ConfigureAwait(false);
+                return wit.Id == id;
+            }
 
-            using var client = CreateWorkItemClient();
-            var wit = await client.DeleteWorkItemAsync(id, destroy: false).ConfigureAwait(false);
-            return wit.Id == id;
+            return false;
         }
     }
 }
