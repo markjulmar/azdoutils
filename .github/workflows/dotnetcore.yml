@@ -24,10 +24,3 @@ jobs:
     - name: Test
       working-directory: ./src
       run: dotnet test --no-restore --verbosity normal
-    - name: Publish nuget
-      working-directory: ./src
-      run: |
-           for f in ./bin/Release/*.nupkg
-           do
-             curl -vX PUT -u "mark_julmar:${{ secrets.nugetkey }}" -F package=@$f https://nuget.pkg.github.com/mark_julmar/
-           done
