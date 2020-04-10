@@ -25,4 +25,7 @@
     <Folder Include="Attributes\" />
     <Folder Include="Linq\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="out\azdoutilities.1.0.0-prerelease.nupkg" />
+  </ItemGroup>
 </Project>
