@@ -2,31 +2,30 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <PackOnBuild>true</PackOnBuild>
-    <PackageId>azdoutilities</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Julmar.AzDOUtilities</PackageId>
+    <Version>1.1.0</Version>
     <PackageVersion>1.1-prerelease</PackageVersion>
     <Authors>Mark Smith</Authors>
-    <Description>A simple wrapper library around Azure DevOps REST APIs.</Description>
+    <CompanyName>julmar.com</CompanyName>
+    <Description>This client library provides a type-safe wrapper to work with the Azure DevOps REST API.</Description>
     <Copyright>(C) 2018-2020 julmar.com</Copyright>
     <Owners>julmar.com</Owners>
     <PackageProjectUrl>https://github.com/markjulmar/AzDOUtils</PackageProjectUrl>
-    <PackageReleaseNotes>1.1-prerelease</PackageReleaseNotes>
     <Summary>Wrapper around Azure DevOps</Summary>
     <Title>Azure DevOps Utility Library</Title>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <ReleaseVersion>1.1-prerelease</ReleaseVersion>
-    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.166.0-preview" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Converters\" />
-    <Folder Include="Attributes\" />
-    <Folder Include="Linq\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="out\azdoutilities.1.0.0-prerelease.nupkg" />
-  </ItemGroup>
+    
 </Project>

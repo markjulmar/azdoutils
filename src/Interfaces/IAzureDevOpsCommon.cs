@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 
-namespace AzDOUtilities.Interfaces
+namespace Julmar.AzDOUtilities.Interfaces
 {
     // Common methods shared between higher-level IAzureDevOpsService
     // and lower IAzureDevOpsServiceRaw

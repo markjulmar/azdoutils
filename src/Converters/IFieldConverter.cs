@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     public interface IFieldComparer
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class AzDOFieldAttribute : Attribute

@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
 using Wit = Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     sealed partial class AzDOService : IAzureDevOpsService
     {

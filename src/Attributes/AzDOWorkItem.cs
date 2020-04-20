@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class AzDOWorkItemAttribute : Attribute

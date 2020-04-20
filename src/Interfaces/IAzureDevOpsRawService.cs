@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
-namespace AzDOUtilities.Interfaces
+namespace Julmar.AzDOUtilities.Interfaces
 {
     public interface IAzureDevOpsRawService : IAzureDevOpsServiceCommon
     {

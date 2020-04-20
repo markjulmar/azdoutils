@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AzDOUtilities.Linq
+namespace Julmar.AzDOUtilities.Linq
 {
     static class TypeSystem
     {

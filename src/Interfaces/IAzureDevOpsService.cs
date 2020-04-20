@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using AzDOUtilities.Interfaces;
+using Julmar.AzDOUtilities.Interfaces;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     public interface IAzureDevOpsService : IAzureDevOpsServiceCommon
     {

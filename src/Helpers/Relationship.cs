@@ -1,4 +1,4 @@
-﻿namespace AzDOUtilities
+﻿namespace Julmar.AzDOUtilities
 {
     public enum Relationship
     {

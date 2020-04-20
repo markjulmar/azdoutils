@@ -1,4 +1,4 @@
-﻿namespace AzDOUtilities
+﻿namespace Julmar.AzDOUtilities
 {
     /// <summary>
     /// Names of standard VSTS fields.

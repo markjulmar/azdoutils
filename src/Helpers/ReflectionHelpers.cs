@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     static class ReflectionHelpers
     {

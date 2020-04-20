@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.Services.WebApi;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     public class IdentityRefConverter : BaseFieldConverter<IdentityRef,string>, IFieldComparer
     {

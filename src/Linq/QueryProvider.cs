@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace AzDOUtilities.Linq
+namespace Julmar.AzDOUtilities.Linq
 {
     class QueryProvider : IQueryProvider
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     public class SemicolonSeparatedConverter : SeparatedValueConverter
     {

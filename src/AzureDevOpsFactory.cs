@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     public static class AzureDevOpsFactory
     {

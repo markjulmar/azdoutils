@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AzDOUtilities.Interfaces;
+using Julmar.AzDOUtilities.Interfaces;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using Wit = Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     sealed partial class AzDOService : IAzureDevOpsRawService
     {

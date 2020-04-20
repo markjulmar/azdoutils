@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     [AttributeUsage(AttributeTargets.Assembly)]
     public class AzDORegisterAttribute : Attribute

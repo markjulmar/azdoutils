@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace AzDOUtilities.Linq
+namespace Julmar.AzDOUtilities.Linq
 {
     internal class InnermostWhereFinder : ExpressionVisitor
     {

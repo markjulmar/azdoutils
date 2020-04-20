@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
 using WitModel = Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     public class WorkItem
     {

@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzDOUtilities", "AzDOUtilities.csproj", "{212FE09E-774A-453F-964F-188D3E6D9F1B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Julmar.AzDOUtilities", "Julmar.AzDOUtilities.csproj", "{212FE09E-774A-453F-964F-188D3E6D9F1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

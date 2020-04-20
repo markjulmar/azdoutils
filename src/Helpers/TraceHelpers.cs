@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
-namespace AzDOUtilities
+namespace Julmar.AzDOUtilities
 {
     [Flags]
     public enum LogLevel
