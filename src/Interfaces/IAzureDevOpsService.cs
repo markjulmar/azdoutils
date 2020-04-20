@@ -11,6 +11,7 @@ namespace Julmar.AzDOUtilities
         Task AddRelationshipAsync(Relationship relationshipType, WorkItem owner, params WorkItem[] relatedItems);
         Task<IEnumerable<WorkItem>> GetRelatedAsync(WorkItem owner);
         Task<IEnumerable<WorkItem>> GetChildrenAsync(WorkItem parent);
+        Task RemoveRelationshipAsync(WorkItem owner, params WorkItem[] relatedItems);
 
         Task<IEnumerable<WorkItem>> QueryAsync(string query);
         Task<IEnumerable<T>> QueryAsync<T>(string query) where T : WorkItem, new();

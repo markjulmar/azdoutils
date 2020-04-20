@@ -99,6 +99,9 @@ namespace Julmar.AzDOUtilities
             if (owner.IsNew)
                 throw new ArgumentException("Cannot add related items to new WorkItem.", nameof(owner));
 
+            if (relatedItems?.Any(wi => wi.IsNew) == true)
+                throw new ArgumentException("Cannot add NEW related items to a WorkItem.", nameof(owner));
+
             var patchDocument = owner.CreatePatchDocument() ?? new JsonPatchDocument();
             foreach (var relatedItem in relatedItems)
             {
@@ -118,6 +121,43 @@ namespace Julmar.AzDOUtilities
             var wit = await UpdateAsync(owner.Id.Value, patchDocument, false, true)
                               .ConfigureAwait(false);
             owner.Initialize(wit);
+        }
+
+        public async Task RemoveRelationshipAsync(WorkItem owner, params WorkItem[] relatedItems)
+        {
+            if (owner is null)
+                throw new ArgumentNullException(nameof(owner));
+
+            if (owner.IsNew)
+                throw new ArgumentException("Cannot remove related items from new WorkItem.", nameof(owner));
+
+            if (relatedItems?.Any(wi => wi.IsNew) == true)
+                throw new ArgumentException("Cannot remove NEW related items from a WorkItem.", nameof(owner));
+
+            using var mc = log?.Enter(new object[] { $"owner:{owner.Id}", $"relatedItems:{string.Join(';', relatedItems?.Select(wi => wi.Id.ToString()))}" });
+
+            var operations = new List<JsonPatchOperation>();
+            var items = (await GetRelatedIdsAsync(owner.Id.Value)).ToList();
+            foreach (var item in relatedItems)
+            {
+                int index = items.IndexOf(item.Id.Value);
+                if (index >= 0)
+                {
+                    operations.Add(new JsonPatchOperation
+                    {
+                        Operation = Operation.Remove,
+                        Path = $"/relations/{index}"
+                    });
+                }
+            }
+
+            if (operations.Count > 0)
+            {
+                var patchDocument = new JsonPatchDocument();
+                patchDocument.AddRange(operations);
+                var wit = await UpdateAsync(owner.Id.Value, patchDocument, false, false).ConfigureAwait(false);
+                owner.Initialize(wit);
+            }
         }
 
         public async Task<IEnumerable<WorkItem>> GetRelatedAsync(WorkItem owner)

@@ -73,7 +73,14 @@ namespace Julmar.AzDOUtilities
                 sb.AppendLine();
                 foreach (var entry in document)
                 {
-                    sb.AppendLine($"  {entry.Operation}: {entry.Path} = \"{entry.Value}\"");
+                    if (entry.Operation == Microsoft.VisualStudio.Services.WebApi.Patch.Operation.Remove)
+                    {
+                        sb.AppendLine($"  {entry.Operation}: {entry.Path}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"  {entry.Operation}: {entry.Path} = \"{entry.Value}\"");
+                    }
                 }
 
                 LogHandler?.Invoke(sb.ToString());

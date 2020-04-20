@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Julmar.AzDOUtilities</PackageId>
-    <Version>1.1.0</Version>
-    <PackageVersion>1.1-prerelease</PackageVersion>
+    <Version>1.2.0</Version>
+    <PackageVersion>1.2-prerelease</PackageVersion>
     <Authors>Mark Smith</Authors>
     <CompanyName>julmar.com</CompanyName>
     <Description>This client library provides a type-safe wrapper to work with the Azure DevOps REST API.</Description>
@@ -15,7 +15,8 @@
     <Summary>Wrapper around Azure DevOps</Summary>
     <Title>Azure DevOps Utility Library</Title>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <ReleaseVersion>1.1-prerelease</ReleaseVersion>
+    <ReleaseVersion>1.2.0</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
