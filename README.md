@@ -4,13 +4,17 @@
 
 The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps REST API. It gives access to a low-level API through the `IAzureDevOpsRawService` which returns `WebApi.Models.WorkItem` objects. The `IAzureDevOpsService` interface is preferred as it returns full wrapper objects (`AzDOUtilities.WorkItem`) with change tracking support.
 
-It's packaged as a [NuGet package](https://www.nuget.org/packages/azdoutilities/).
+It's packaged as a [NuGet package](https://www.nuget.org/packages/Julmar.AzDOUtilities/). You can add it to your project with the following command.
+
+```bash
+dotnet add package Julmar.AzDOUtilities --version 1.1.0-prerelease
+```
 
 ## Release notes
 
 | Version | Changes  |
 |---------|----------|
-| **1.1-pre**  | Added `Relationship` enum and new `IAzureDevOpsService.AddRelationshipAsync` method. |
+| **1.1-pre**  | Added `Relationship` enum and new `IAzureDevOpsService.AddRelationshipAsync` method and moved to Julmar.AzDOUtilities. |
 | **1.01-pre** | Optimized some calling paths for async. |
 | **1.0-pre**  | Initial public release. |
 
@@ -20,6 +24,10 @@ It's packaged as a [NuGet package](https://www.nuget.org/packages/azdoutilities/
 The `AzureDevOpsFactory` is the starting point for accessing Azure DevOps data with .NET. The `Create` method returns a `IAzureDevOpsService` object and takes a URL to the AzDO site and an access token.
 
 ```csharp
+using Julmar.AzDOUtilities;
+
+...
+
 IAzureDevOpsService service = AzureDevOpsFactory.Create("https://myvsts.microsoft.com/", accessToken);
 
 var workItems = await service.QueryAsync("SELECT [Id] FROM [WorkItems] WHERE [System.TeamProject] = 'MyProject'"
