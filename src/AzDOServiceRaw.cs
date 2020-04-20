@@ -111,7 +111,7 @@ namespace AzDOUtilities
             foreach (var relation in workItem.Relations)
             {
                 //get the child links
-                if (relation.Rel == "System.LinkTypes.Related")
+                if (relation.Rel == RelationshipLinkText[(int)Relationship.Related])
                 {
                     var lastIndex = relation.Url.LastIndexOf("/", StringComparison.Ordinal);
                     var itemId = relation.Url.Substring(lastIndex + 1);
@@ -126,7 +126,7 @@ namespace AzDOUtilities
             using var mc = log?.Enter(LogLevel.EnterExitRaw, id);
             using var client = CreateWorkItemClient();
             var workItem = await client.GetWorkItemAsync(id, expand: WorkItemExpand.Relations).ConfigureAwait(false);
-            var relation = workItem.Relations?.SingleOrDefault(r => r.Rel == "System.LinkTypes.Hierarchy-Reverse");
+            var relation = workItem.Relations?.SingleOrDefault(r => r.Rel == RelationshipLinkText[(int)Relationship.Parent]);
             if (relation != null)
             {
                 var lastIndex = relation.Url.LastIndexOf("/", StringComparison.Ordinal);
@@ -149,7 +149,7 @@ namespace AzDOUtilities
             foreach (var relation in workItem.Relations)
             {
                 //get the child links
-                if (relation.Rel == "System.LinkTypes.Hierarchy-Forward")
+                if (relation.Rel == RelationshipLinkText[(int)Relationship.Child])
                 {
                     var lastIndex = relation.Url.LastIndexOf("/", StringComparison.Ordinal);
                     var itemId = relation.Url.Substring(lastIndex + 1);

@@ -12,6 +12,18 @@ namespace AzDOUtilities
 {
     sealed partial class AzDOService : IAzureDevOpsService
     {
+        static readonly string[] RelationshipLinkText =
+        {
+            "System.LinkTypes.Dependency",
+            "System.LinkTypes.Related",
+            "System.LinkTypes.Hierarchy-Forward",
+            "System.LinkTypes.Hierarchy-Reverse",
+            "Microsoft.VSTS.Common.Affects-Forward",
+            "Microsoft.VSTS.Common.Affects-Reverse",
+            "System.LinkTypes.Duplicate-Forward",
+            "System.LinkTypes.Duplicate-Reverse"
+        };
+
         private readonly string uri;
         private readonly string accessToken;
         internal TraceHelpers log;
@@ -59,16 +71,27 @@ namespace AzDOUtilities
         public Task AddChildrenAsync(WorkItem parent, params WorkItem[] children)
         {
             using var mc = log?.Enter(new object[] { $"parent:{parent.Id}", $"children:{string.Join(';', children?.Select(wi => wi.Id.ToString()))}" });
-            return AddRelationshipAsync("System.LinkTypes.Hierarchy - Forward", parent, children);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, children);
         }
 
         public Task AddRelatedAsync(WorkItem owner, params WorkItem[] relatedItems)
         {
             using var mc = log?.Enter(new object[] { $"owner:{owner.Id}", $"relatedItems:{string.Join(';', relatedItems?.Select(wi => wi.Id.ToString()))}" });
-            return AddRelationshipAsync("System.LinkTypes.Related", owner, relatedItems);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, relatedItems);
         }
 
-        private async Task AddRelationshipAsync(string linkType, WorkItem owner, params WorkItem[] relatedItems)
+        public Task AddRelationshipAsync(Relationship relationshipType, WorkItem owner, WorkItem[] relatedItems)
+        {
+            using var mc = log?.Enter(new object[] { $"owner:{owner.Id}", $"relatedItems:{string.Join(';', relatedItems?.Select(wi => wi.Id.ToString()))}" });
+
+            int pos = (int)relationshipType;
+            if (pos < 0 || pos >= RelationshipLinkText.Length)
+                throw new ArgumentOutOfRangeException(nameof(relationshipType));
+
+            return InternalAddRelationshipAsync(RelationshipLinkText[pos], owner, relatedItems);
+        }
+
+        private async Task InternalAddRelationshipAsync(string linkType, WorkItem owner, params WorkItem[] relatedItems)
         {
             if (owner is null)
                 throw new ArgumentNullException(nameof(owner));

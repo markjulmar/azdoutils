@@ -4,17 +4,18 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <PackOnBuild>true</PackOnBuild>
     <PackageId>azdoutilities</PackageId>
-    <PackageVersion>1.0-prerelease</PackageVersion>
+    <PackageVersion>1.1-prerelease</PackageVersion>
     <Authors>Mark Smith</Authors>
     <Description>A simple wrapper library around Azure DevOps REST APIs.</Description>
     <Copyright>(C) 2018-2020 julmar.com</Copyright>
     <Owners>julmar.com</Owners>
     <PackageProjectUrl>https://github.com/markjulmar/AzDOUtils</PackageProjectUrl>
-    <PackageReleaseNotes>1.0 preview version</PackageReleaseNotes>
+    <PackageReleaseNotes>1.1-prerelease</PackageReleaseNotes>
     <Summary>Wrapper around Azure DevOps</Summary>
     <Title>Azure DevOps Utility Library</Title>
-    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <ReleaseVersion>0.2</ReleaseVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <ReleaseVersion>1.1-prerelease</ReleaseVersion>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <ItemGroup>

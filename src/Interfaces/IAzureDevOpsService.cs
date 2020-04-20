@@ -8,6 +8,7 @@ namespace AzDOUtilities
     {
         Task AddChildrenAsync(WorkItem parent, params WorkItem[] children);
         Task AddRelatedAsync(WorkItem owner, params WorkItem[] relatedItems);
+        Task AddRelationshipAsync(Relationship relationshipType, WorkItem owner, params WorkItem[] relatedItems);
         Task<IEnumerable<WorkItem>> GetRelatedAsync(WorkItem owner);
         Task<IEnumerable<WorkItem>> GetChildrenAsync(WorkItem parent);
 

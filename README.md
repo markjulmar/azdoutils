@@ -6,6 +6,15 @@ The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps
 
 It's packaged as a [NuGet package](https://www.nuget.org/packages/azdoutilities/).
 
+## Release notes
+
+| Version | Changes  |
+|---------|----------|
+| **1.1-pre**  | Added `Relationship` enum and new `IAzureDevOpsService.AddRelationshipAsync` method. |
+| **1.01-pre** | Optimized some calling paths for async. |
+| **1.0-pre**  | Initial public release. |
+
+
 ## AzureDevOpsFactory
 
 The `AzureDevOpsFactory` is the starting point for accessing Azure DevOps data with .NET. The `Create` method returns a `IAzureDevOpsService` object and takes a URL to the AzDO site and an access token.
