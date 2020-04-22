@@ -2,18 +2,19 @@
 
 ![.NET Core](https://github.com/markjulmar/azdoutils/workflows/.NET%20Core/badge.svg)
 
-The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps REST API. It gives access to a low-level API through the `IAzureDevOpsRawService` which returns `WebApi.Models.WorkItem` objects. The `IAzureDevOpsService` interface is preferred as it returns full wrapper objects (`AzDOUtilities.WorkItem`) with change tracking support.
+The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps REST API. It gives access to a high-level API through the `IAzureDevOpsService` interface. The service works with typed wrapper objects (`AzDOUtilities.WorkItem`) with change tracking support.
 
 It's packaged as a [NuGet package](https://www.nuget.org/packages/Julmar.AzDOUtilities/). You can add it to your project with the following command.
 
 ```bash
-dotnet add package Julmar.AzDOUtilities --version 1.1.0-prerelease
+dotnet add package Julmar.AzDOUtilities --version 1.4.0-prerelease
 ```
 
 ## Release notes
 
 | Version | Changes  |
 |---------|----------|
+| **1.4-pre**  | Some refactoring - removed the raw interface.
 | **1.1-pre**  | Added `Relationship` enum and new `IAzureDevOpsService.AddRelationshipAsync` method and moved to Julmar.AzDOUtilities. |
 | **1.01-pre** | Optimized some calling paths for async. |
 | **1.0-pre**  | Initial public release. |
@@ -137,17 +138,3 @@ There are several built-in converters:
 There's no need to specify the fields to select with the higher-level API (LINQ or `IAzureDevOpsService`). Selecting `Id` by itself will still populate the full object. The library will scan the defined properties and `AzDOFieldAttribute` objects to determine the valid fields and automatically request those from Azure DevOps as part of the query.
 
 > **Note:** this behavior means the fields you decorate your properties with _must_ be defined in your Azure DevOps project. A misnamed field will generate a runtime error. The field doesn't have to be in the WorkItem type - it just needs to be defined.
-
-
-### Access the raw provider
-
-The `AzureDevOpsFactory.Create` method returns an `IAzureDevOpsService` interface. However, the underlying object implements _both_ the higher-level service _and_ the lower-level service. You can cast the object to an `IAzureDevOpsRawService` to get access to those APIs.
-
-```csharp
-IAzureDevOpsService service = AzureDevOpsFactory.Create("https://myvsts.microsoft.com/", accessToken);
-
-IEnumerable<WorkItemUpdate> updateHistory = await GetItemUpdatesAsync(workItemId, top: 10, skip:5);
-...
-```
-
-

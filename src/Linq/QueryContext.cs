@@ -23,26 +23,38 @@ namespace Julmar.AzDOUtilities.Linq
 
         public object Execute(Expression expression, bool IsEnumerable)
         {
-            // The expression must represent a query over the data source. 
-            if (!IsQueryOverDataSource(expression))
-                throw new InvalidProgramException("No query over the data source was specified.");
+            int? takeValue = null;
+            List<string> values = null;
 
-            // Find the call to Where() and get the lambda expression predicate.
-            InnermostWhereFinder whereFinder = new InnermostWhereFinder();
-            MethodCallExpression whereExpression = whereFinder.GetInnermostWhere(expression);
-            LambdaExpression lambdaExpression = (LambdaExpression)((UnaryExpression)(whereExpression.Arguments[1])).Operand;
+            if (IsQueryOverDataSource(expression))
+            {
+                // See if we have a TAKE expression.
+                var takeExpression = new TakeFinder().FindTake(expression);
+                if (takeExpression != null)
+                {
+                    ConstantExpression ce = (ConstantExpression) takeExpression.Arguments[1];
+                    takeValue = Convert.ToInt32(ce.Value);
+                }
 
-            // Send the lambda expression through the partial evaluator.
-            lambdaExpression = (LambdaExpression)Evaluator.PartialEval(lambdaExpression);
+                // Find the call to Where() and get the lambda expression predicate.
+                var whereExpression = new InnermostWhereFinder().GetInnermostWhere(expression);
+                if (whereExpression != null)
+                {
+                    LambdaExpression lambdaExpression = (LambdaExpression)((UnaryExpression)(whereExpression.Arguments[1])).Operand;
+                    if (lambdaExpression != null)
+                    {
+                        // Send the lambda expression through the partial evaluator.
+                        lambdaExpression = (LambdaExpression)Evaluator.PartialEval(lambdaExpression);
 
-            // Get the WHERE clause query Azure DevOps with.
-            var lf = new WiqlVisitor<T>(((AzDOService)service).log,lambdaExpression.Body);
-            var values = lf.WhereClauses;
-            if (values.Count == 0)
-                throw new InvalidQueryException("You must specify at least one place name in your query.");
+                        // Get the WHERE clause query Azure DevOps with.
+                        var lf = new WiqlVisitor<T>(((AzDOService)service).log, lambdaExpression.Body);
+                        values = lf.WhereClauses;
+                    }
+                }
+            }
 
             // Execute the query.
-            var foundItems = ExecuteQuery(values).ToArray();
+            var foundItems = ExecuteQuery(values, takeValue).ToArray();
 
             // Create a Queryable<T> from the array of objects.
             IQueryable<T> queryableItems = foundItems.AsQueryable();
@@ -64,13 +76,19 @@ namespace Julmar.AzDOUtilities.Linq
                 : queryableItems.Provider.Execute(newExpressionTree);
         }
 
-        private IEnumerable<T> ExecuteQuery(List<string> whereClause)
+        private IEnumerable<T> ExecuteQuery(List<string> whereClause, int? take)
         {
-            string query = $"SELECT [System.Id] FROM WorkItems WHERE ";
+            bool addedWhere = false;
+            const string WhereClause = " WHERE ";
+            const string AndClause = " AND ";
+
+            string query = $"SELECT [System.Id] FROM WorkItems";
 
             if (!string.IsNullOrWhiteSpace(project))
             {
-                query += $"[System.TeamProject] = '{project}' AND ";
+                addedWhere = true;
+                query += WhereClause;
+                query += $"[System.TeamProject] = '{project}'";
             }
 
             if (typeof(T) != typeof(WorkItem))
@@ -78,14 +96,37 @@ namespace Julmar.AzDOUtilities.Linq
                 var record = ReflectionHelpers.RegisteredTypes.SingleOrDefault(kvp => kvp.Value == typeof(T));
                 if (record.Key != null)
                 {
-                    query += $"[System.WorkItemType] = '{record.Key}' AND ";
+                    if (!addedWhere)
+                    {
+                        addedWhere = true;
+                        query += WhereClause;
+                    }
+                    else
+                    {
+                        query += AndClause;
+                    }
+
+                    query += $"[System.WorkItemType] = '{record.Key}'";
                 }
             }
 
-            foreach (var item in whereClause)
-                query += item;
+            if (whereClause?.Count > 0)
+            {
+                if (!addedWhere)
+                {
+                    addedWhere = true;
+                    query += WhereClause;
+                }
+                else
+                {
+                    query += AndClause;
+                }
 
-            var items = service.QueryAsync(query).Result;
+                foreach (var item in whereClause)
+                    query += item;
+            }
+
+            var items = service.QueryAsync(query, take).Result;
             return items.Cast<T>();
         }
 

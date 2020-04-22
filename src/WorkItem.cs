@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
@@ -11,27 +9,53 @@ using WitModel = Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkIte
 
 namespace Julmar.AzDOUtilities
 {
+    /// <summary>
+    /// Base WorkItem type that wraps a WorkItem in Azure DevOps to support
+    /// change tracking and property mapping.
+    /// </summary>
     public class WorkItem
     {
         private WitModel workItem;
 
+        /// <summary>
+        /// Unique id for the WorkItem. Null if not created or mapped to AzDO.
+        /// </summary>
         public int? Id => workItem?.Id;
+
+        /// <summary>
+        /// Current revision for the WorkItem
+        /// </summary>
         public int? Revision => workItem?.Rev;
+
+        /// <summary>
+        /// URL for the WorkItem in Azure DevOps.
+        /// </summary>
         public string Url => workItem?.Url;
+
+        /// <summary>
+        /// True if this is a new WorkItem that is not on the server.
+        /// </summary>
+        public bool IsNew => workItem == null;
 
         [AzDOField(Field.ChangedDate, IsReadOnly = true)]
         public DateTime? ChangedDate { get; protected set; }
+
         [AzDOField(Field.StateChangedDate, IsReadOnly = true)]
         public DateTime? StateChangedDate { get; protected set; }
-        [AzDOField(Field.CreatedBy, IsReadOnly = true)]
-        public string CreatedBy { get; protected set; }
-        [AzDOField(Field.ChangedBy, IsReadOnly = true, Converter = typeof(IdentityRefConverter))]
-        public string ChangedBy { get; protected set; }
+
+        [AzDOField(Field.CreatedBy, Converter = typeof(IdentityRefConverter))]
+        public string CreatedBy { get; set; }
+
+        [AzDOField(Field.ChangedBy, Converter = typeof(IdentityRefConverter))]
+        public string ChangedBy { get; set; }
+
         [AzDOField(Field.CreatedDate, IsReadOnly = true)]
         public DateTime? CreatedDate { get; protected set; }
+
         [AzDOField(Field.ClosedBy, Converter = typeof(IdentityRefConverter))]
-        public string ClosedBy { get; protected set; }
-        [AzDOField(Field.ClosedDate)]
+        public string ClosedBy { get; set; }
+
+        [AzDOField(Field.ClosedDate, IsReadOnly = true)]
         public DateTime? ClosedDate { get; protected set; }
 
         [AzDOField(Field.WorkItemType)]
@@ -45,34 +69,47 @@ namespace Julmar.AzDOUtilities
 
         [AzDOField(Field.AreaPath)]
         public string AreaPath { get; set; }
+
         [AzDOField(Field.AreaId)]
         public int? AreaId { get; set; }
+
         [AzDOField(Field.IterationPath)]
         public string IterationPath { get; set; }
+
         [AzDOField(Field.IterationId)]
         public int? IterationId { get; set; }
+
         [AzDOField(Field.StackRank)]
         public double? StackRank { get; set; }
 
         [AzDOField(Field.Title)]
         public string Title { get; set; }
+
         [AzDOField(Field.Description)]
         public string Description { get; set; }
+
         [AzDOField(Field.State)]
         public string State { get; set; }
+
         [AzDOField(Field.Reason)]
         public string Reason { get; set; }
+
         [AzDOField(Field.Priority)]
         public int? Priority { get; set; }
+
         [AzDOField(Field.AssignedTo, Converter = typeof(IdentityRefConverter))]
         public string AssignedTo { get; set; }
+
         [AzDOField(Field.AcceptedBy, Converter = typeof(IdentityRefConverter))]
         public string AcceptedBy { get; set; }
+
         [AzDOField(Field.Tags, Converter = typeof(SemicolonSeparatedConverter))]
         public List<string> Tags { get; set; }
 
-        public bool IsNew => workItem == null;
-
+        /// <summary>
+        /// Initialize a wrapper object from a AzDO WorkItem
+        /// </summary>
+        /// <param name="workItem">Azure DevOps WorkItem</param>
         internal void Initialize(WitModel workItem)
         {
             if (workItem == null)
@@ -84,23 +121,37 @@ namespace Julmar.AzDOUtilities
                 throw new ArgumentException("WorkItem Id mismatch", nameof(workItem));
             }
 
-            this.workItem = workItem;
+            if (!object.ReferenceEquals(workItem, this.workItem))
+                this.workItem = workItem;
+
             this.ResetToInitialState();
         }
 
+        /// <summary>
+        /// Retrieve the initial value for a field
+        /// </summary>
+        /// <typeparam name="T">Type of the field</typeparam>
+        /// <param name="fieldName">Field ReferenceName in Azure DevOps</param>
+        /// <param name="value">Output value</param>
+        /// <returns>True if the field value is set, false if not.</returns>
         protected internal bool TryGetInitialValue<T>(string fieldName, out T value)
         {
-            object field = null;
-            if (workItem?.Fields.TryGetValue(fieldName, out field) == true)
+            if (workItem != null)
             {
-                value = (T) field;
-                return true;
+                if (workItem.Fields.TryGetValue(fieldName, out object field) == true)
+                {
+                    value = (T)field;
+                    return true;
+                }
             }
 
             value = default;
             return false;
         }
 
+        /// <summary>
+        /// True if this WorkItem has unsaved changes.
+        /// </summary>
         public bool HasChanges
         {
             get
@@ -111,6 +162,10 @@ namespace Julmar.AzDOUtilities
             }
         }
 
+        /// <summary>
+        /// Creates a JSON PatchDocument to update the state of the server-side WorkItem.
+        /// </summary>
+        /// <returns>JSON document</returns>
         internal JsonPatchDocument CreatePatchDocument()
         {
             var document = new JsonPatchDocument();
@@ -168,58 +223,11 @@ namespace Julmar.AzDOUtilities
             return null;
         }
 
-        private bool CompareField(object initialValue, object newValue)
-        {
-            if (initialValue == null && newValue == null)
-                return true;
-            if (initialValue == null || newValue == null)
-            {
-                // Allow null == string.Empty
-                if (initialValue?.GetType() == typeof(string))
-                    newValue = string.Empty;
-                else if (newValue?.GetType() == typeof(string))
-                    initialValue = string.Empty;
-                else
-                    return false;
-            }
-
-            Type initialType = initialValue.GetType();
-            Type newType = newValue.GetType();
-
-            if (initialType == newType)
-            {
-                if (initialValue is IList list1)
-                {
-                    IList list2 = (IList)newValue;
-
-                    if (list1.Count != list2.Count) return false;
-                    for (int i = 0; i < list1.Count; i++)
-                    {
-                        if (!object.Equals(list1[i], list2[i]))
-                            return false;
-                    }
-                    return true;
-                }
-                else
-                {
-                    return object.Equals(initialValue, newValue);
-                }
-            }
-            else if (newType == typeof(string))
-            {
-                return string.Compare(newValue.ToString(), initialValue.ToString()) == 0;
-            }
-            else if (newType.IsGenericType &&
-                     newType.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                object tv = Convert.ChangeType(initialValue, newType.GetGenericArguments()[0]);
-                return object.Equals(tv, newValue);
-            }
-
-            object testValue = Convert.ChangeType(initialValue, newType);
-            return object.Equals(testValue, newValue);
-        }
-
+        /// <summary>
+        /// Spins through all the mapped properties/fields and calls a delegate to process each one.
+        /// This is used to generate Patch documents, debug output, and determine changes.
+        /// </summary>
+        /// <param name="processor">Processor for each field.</param>
         protected void ProcessFieldProperties(Func<AzDOFieldAttribute,object,object,bool,bool> processor)
         {
             if (processor == null)
@@ -253,7 +261,14 @@ namespace Julmar.AzDOUtilities
 
                     if (changed == null)
                     {
-                        changed = !CompareField(currentValue, initialValue);
+                        try
+                        {
+                            changed = !ReflectionHelpers.CompareField(currentValue, initialValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Failed to compare {prop.PropertyType.Name} {prop.Name} ({prop.GetValue(this)} to {fieldInfo.FieldName} ({initialValue})", ex);
+                        }
                     }
 
                     if (!processor.Invoke(fieldInfo, initialValue, currentValue, changed.Value))
@@ -265,6 +280,11 @@ namespace Julmar.AzDOUtilities
             }
         }
 
+        /// <summary>
+        /// Returns the set of fields that have been changed since this WorkItem was retrieved
+        /// from the server.
+        /// </summary>
+        /// <returns>Tuple collection of changes.</returns>
         public IReadOnlyList<(string FieldName, string OldValue, string NewValue)> GatherChangeList()
         {
             var changes = new List<(string FieldName, string OldValue, string NewValue)>();
@@ -281,28 +301,9 @@ namespace Julmar.AzDOUtilities
             return changes;
         }
 
-        public string ToDeltaString(bool full = false)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"{WorkItemType} {Id}");
-
-            ProcessFieldProperties((fieldInfo, initialValue, currentValue, changed) =>
-            {
-                if (!changed)
-                {
-                    if (full)
-                        sb.AppendLine($"{fieldInfo.FieldName}: {currentValue}");
-                }
-                else
-                {
-                    sb.AppendLine($"*{fieldInfo.FieldName}: {currentValue} ({initialValue})");
-                }
-                return true;
-            });
-
-            return sb.ToString();
-        }
-
+        /// <summary>
+        /// This resets the WorkItem state back to the initial server-side state.
+        /// </summary>
         public void ResetToInitialState()
         {
             foreach (var prop in GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
@@ -311,69 +312,85 @@ namespace Julmar.AzDOUtilities
                 var fieldInfo = prop.GetCustomAttribute<AzDOFieldAttribute>();
                 if (fieldInfo != null)
                 {
-                    TryGetInitialValue(fieldInfo.FieldName, out object initialValue);
+                    bool foundValue = TryGetInitialValue(fieldInfo.FieldName, out object initialValue);
 
-                    // Always run the value through the converter - even if null as the converter
-                    // can change the value.
-                    if(fieldInfo.Converter != null)
+                    try
                     {
-                        initialValue = ((IFieldConverter)Activator.CreateInstance(fieldInfo.Converter))
-                            .Convert(initialValue, prop.PropertyType);
-                    }
+                        // Always run the value through the converter - even if null as the converter
+                        // can change the value.
+                        if (fieldInfo.Converter != null)
+                        {
+                            object newValue = ((IFieldConverter)Activator.CreateInstance(fieldInfo.Converter))
+                                .Convert(initialValue, prop.PropertyType);
 
-                    // Assign the value to the local property.
-                    if (initialValue == null || prop.PropertyType == initialValue.GetType())
-                    {
-                        prop.SetValue(this, initialValue);
-                    }
-                    else if (prop.PropertyType == typeof(string))
-                    {
-                        prop.SetValue(this, initialValue?.ToString());
-                    }
-                    else if (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?))
-                    {
-                        // Dates in VSTS are always UTC.
-                        if (initialValue == null)
-                        {
-                            if (prop.PropertyType == typeof(DateTime?))
-                                prop.SetValue(this, null);
-                            else
-                                throw new Exception($"Cannot serialize null value into {prop.PropertyType.Name} {prop.Name}");
+                            initialValue = newValue;
                         }
-                        else if(initialValue != null)
+
+                        // Assign the value to the local property.
+                        if (initialValue == null || prop.PropertyType == initialValue.GetType())
                         {
-                            DateTime utcDate = (DateTime)initialValue;
-                            prop.SetValue(this, utcDate.ToLocalTime());
+                            prop.SetValue(this, initialValue);
                         }
+                        else if (prop.PropertyType == typeof(string))
+                        {
+                            prop.SetValue(this, initialValue?.ToString());
+                        }
+                        else if (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?))
+                        {
+                            // Dates in VSTS are always UTC.
+                            if (initialValue == null)
+                            {
+                                if (prop.PropertyType == typeof(DateTime?))
+                                    prop.SetValue(this, null);
+                                else
+                                    throw new Exception($"Cannot serialize null value into {prop.PropertyType.Name} {prop.Name}");
+                            }
+                            else if (initialValue != null)
+                            {
+                                DateTime utcDate = (DateTime)initialValue;
+                                prop.SetValue(this, utcDate.ToLocalTime());
+                            }
+                        }
+                        else if (prop.PropertyType.IsGenericType &&
+                                    prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            prop.SetValue(this, Convert.ChangeType(initialValue, prop.PropertyType.GetGenericArguments()[0]));
+                        }
+                        else
+                        {
+                            prop.SetValue(this, Convert.ChangeType(initialValue, prop.PropertyType));
+                        }
+
                     }
-                    else if (prop.PropertyType.IsGenericType &&
-                                prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    catch (Exception ex)
                     {
-                        prop.SetValue(this, Convert.ChangeType(initialValue, prop.PropertyType.GetGenericArguments()[0]));
-                    }
-                    else
-                    {
-                        prop.SetValue(this, Convert.ChangeType(initialValue, prop.PropertyType));
+                        string ivalue = foundValue
+                            ? initialValue != null
+                                ? $"{initialValue.GetType().Name} {initialValue}"
+                                : "null"
+                            : "{none}";
+                        throw new Exception($"Failed to set {prop.PropertyType.Name} {prop.Name} from field {fieldInfo.FieldName} [{ivalue}] ({fieldInfo.Converter?.Name})", ex);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Changes the WorkItemType.
+        /// </summary>
+        /// <param name="newWitType">New type</param>
         public void ChangeType(string newWitType)
         {
             this.WorkItemType = newWitType;
         }
 
+        /// <summary>
+        /// Provides a text representation of the object.
+        /// </summary>
+        /// <returns>String</returns>
         public override string ToString()
         {
             return $"{WorkItemType} {Id}: ({State}) \"{Title}\"";
-        }
-
-        internal static T FromWorkItem<T>(WitModel workItem) where T : WorkItem, new()
-        {
-            var rc = new T();
-            rc.Initialize(workItem);
-            return rc;
         }
     }
 }

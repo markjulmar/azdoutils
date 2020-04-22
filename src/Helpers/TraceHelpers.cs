@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
 namespace Julmar.AzDOUtilities
@@ -44,13 +46,53 @@ namespace Julmar.AzDOUtilities
                 string parameters = "";
                 if (args != null && args is object[] pms)
                 {
-                    parameters = string.Join(',', pms.Select(p => p?.ToString()??"null"));
+                    parameters = string.Join(',', pms.Select(DumpObject));
                 }
                 else if (args != null)
                     parameters = args.ToString();
 
                 helper.WriteLine(logLevel, $">> {methodName}({parameters})");
                 helper.indent++;
+            }
+
+            private string DumpObject(object obj)
+            {
+                if (obj == null) return "null";
+
+                if (obj is string s)
+                {
+                    return $"\"{s}\"";
+                }
+                else if (obj is WorkItem wit)
+                {
+                    return $"{wit.WorkItemType} {wit.Id}";
+                }
+                else if (obj is IEnumerable)
+                {
+                    StringBuilder sb = new StringBuilder("[");
+                    int pos = 0;
+                    foreach (var item in (IEnumerable)obj)
+                    {
+                        if (pos++ > 0) sb.Append(',');
+                        if (obj is string str)
+                        {
+                            sb.Append($"\"{str}\"");
+                        }
+                        else
+                        {
+                            sb.Append(item?.ToString() ?? "null");
+                        }
+                    }
+                    sb.Append("]");
+                    return sb.ToString();
+                }
+                else if (obj is CancellationToken)
+                {
+                    return (((CancellationToken)obj) == CancellationToken.None)
+                        ? "CancellationToken.None"
+                        : ((CancellationToken)obj).ToString();
+                }
+                return obj.ToString();
             }
 
             public void Dispose()
