@@ -17,8 +17,7 @@ namespace Julmar.AzDOUtilities
         EnterExit = 4,
         PatchDocument = 8,
         RelatedApis = 16,
-        LinqExpression = 32,
-        EnterExitRaw = 64
+        LinqExpression = 32
     }
 
     internal class TraceHelpers

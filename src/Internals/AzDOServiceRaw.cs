@@ -153,7 +153,6 @@ namespace Julmar.AzDOUtilities
             if (this.ValidateOnly)
                 validateOnly = true;
 
-            using var mc = log?.Enter(LogLevel.EnterExitRaw, new object[] { projectName, workItemType, validateOnly, bypassRules, cancellationToken });
             log?.Dump(patchDocument);
 
             return await WorkItemClient.CreateWorkItemAsync(patchDocument, projectName, workItemType, validateOnly, bypassRules, userState: null, cancellationToken)
@@ -166,7 +165,6 @@ namespace Julmar.AzDOUtilities
             if (this.ValidateOnly)
                 validateOnly = true;
 
-            using var mc = log?.Enter(LogLevel.EnterExitRaw, new object[] { id, patchDocument, validateOnly, bypassRules, cancellationToken });
             log?.Dump(patchDocument);
 
             return await WorkItemClient.UpdateWorkItemAsync(patchDocument, id, validateOnly, bypassRules, supressNotifications, expand, userState: null, cancellationToken)
