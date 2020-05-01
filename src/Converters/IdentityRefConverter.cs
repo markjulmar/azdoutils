@@ -1,8 +1,9 @@
-﻿using Microsoft.VisualStudio.Services.WebApi;
+﻿using System;
+using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Julmar.AzDOUtilities
 {
-    public class IdentityRefConverter : BaseFieldConverter<IdentityRef,string>, IFieldComparer
+    public class IdentityRefConverter : IFieldConverter, IFieldComparer
     {
         public bool Compare(object initialValue, object currentValue)
         {
@@ -11,17 +12,35 @@ namespace Julmar.AzDOUtilities
                 return true;
 
             return initialValue is IdentityRef identity
-                ? string.Compare(currentValue?.ToString()??"", identity.UniqueName, true) == 0
+                ? string.Compare(currentValue?.ToString()??"", Convert(identity), true) == 0
                 : false;
         }
 
-        public override string Convert(IdentityRef value)
+        static string Convert(IdentityRef identity) => identity.DisplayName + $" <{identity.UniqueName}>";
+
+        public object Convert(object value, Type toType)
         {
-            if (value == null) return null;
-            return (value is IdentityRef identity)
-                ? identity.UniqueName : string.Empty;
+            if (toType != typeof(string))
+                throw new Exception(nameof(IdentityRefConverter) + " can only convert to " + nameof(String));
+            if (value == null)
+                return null;
+
+            if (value is IdentityRef identity)
+            {
+                return Convert(identity);
+            }
+
+            if (value is string s)
+            {
+                return s;
+            }
+
+            return string.Empty;
         }
 
-        public override object ConvertBack(string value) => value;
+        public object ConvertBack(object value)
+        {
+            return value;
+        }
     }
 }

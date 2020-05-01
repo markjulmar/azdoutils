@@ -17,7 +17,8 @@ namespace Julmar.AzDOUtilities
         EnterExit = 4,
         PatchDocument = 8,
         RelatedApis = 16,
-        LinqExpression = 32
+        LinqExpression = 32,
+        RawApis = 64
     }
 
     internal class TraceHelpers
@@ -64,7 +65,9 @@ namespace Julmar.AzDOUtilities
                 }
                 else if (obj is WorkItem wit)
                 {
-                    return $"{wit.WorkItemType} {wit.Id}";
+                    return (wit.Id == null)
+                        ? $"{wit.WorkItemType} NewItem"
+                        : $"{wit.WorkItemType} {wit.Id}";
                 }
                 else if (obj is IEnumerable)
                 {

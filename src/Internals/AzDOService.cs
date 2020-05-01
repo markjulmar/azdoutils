@@ -217,11 +217,31 @@ namespace Julmar.AzDOUtilities
             return ReflectionHelpers.MapWorkItemTypes(workItems);
         }
 
+        internal async Task<IEnumerable<WorkItem>> QueryForTypeAsync(Type expectedType, string query, int? top, bool? timePrecision, CancellationToken cancellationToken)
+        {
+            // This version is used by LINQ to constrain the fields to what's on the type.
+            // But we can't add constraints to QueryProvider<T> so we pass the type in here
+            // and constrain it directly
+            using var mc = log?.Enter(new object[] { query, top, timePrecision, cancellationToken }, nameof(QueryAsync));
+
+            var typeFields = (expectedType == typeof(WorkItem))
+                ? ReflectionHelpers.GetAllFields(this)
+                : ReflectionHelpers.GetQueryFieldsForType(expectedType).FilterFields(this).ToArray();
+
+            var workItems = await InternalGetWorkItemsAsync(query, typeFields,
+                                                            top, timePrecision, WorkItemExpand.None, ErrorPolicy, cancellationToken)
+                                        .ConfigureAwait(false);
+
+            return ReflectionHelpers.MapWorkItemTypes(workItems);
+        }
+
         public async Task<IEnumerable<T>> QueryAsync<T>(string query, int? top, bool? timePrecision, CancellationToken cancellationToken) where T : WorkItem, new()
         {
             using var mc = log?.Enter(new object[] { query, top, timePrecision, cancellationToken });
 
-            var typeFields = ReflectionHelpers.GetQueryFieldsForType(typeof(T)).FilterFields(this).ToArray();
+            var typeFields =  (typeof(T) == typeof(WorkItem))
+                ? ReflectionHelpers.GetAllFields(this)
+                : ReflectionHelpers.GetQueryFieldsForType(typeof(T)).FilterFields(this).ToArray();
             var workItems = await InternalGetWorkItemsAsync(query, typeFields,
                                                             top, timePrecision, WorkItemExpand.None, ErrorPolicy, cancellationToken)
                                         .ConfigureAwait(false);

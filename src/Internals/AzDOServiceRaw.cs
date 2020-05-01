@@ -92,9 +92,13 @@ namespace Julmar.AzDOUtilities
             for (int i = 0; i < ids.Count; i += nSize)
             {
                 var range = ids.GetRange(i, Math.Min(nSize, ids.Count - i));
-                var results = await WorkItemClient.GetWorkItemsAsync(range, fields, asOf, expand, errorPolicy, userState: null, cancellationToken)
-                                                  .ConfigureAwait(false);
-                workItems.AddRange(results);
+
+                using var mc = log?.Enter(LogLevel.RawApis, new object[] { range, fields, asOf, expand, errorPolicy, null, cancellationToken }, "GetWorkItemsAsync");
+                {
+                    var results = await WorkItemClient.GetWorkItemsAsync(range, fields, asOf, expand, errorPolicy, userState: null, cancellationToken)
+                                                      .ConfigureAwait(false);
+                    workItems.AddRange(results);
+                }
             }
 
             return workItems;
@@ -103,6 +107,8 @@ namespace Julmar.AzDOUtilities
         async Task<IReadOnlyList<RelationLinks>> InternalGetRelatedIdsAsync(int id, string relationshipType, DateTime? asOf, CancellationToken cancellationToken)
         {
             var list = new List<RelationLinks>();
+
+            using var mc = log?.Enter(LogLevel.RawApis, new object[] { id, null, asOf, WorkItemExpand.Relations, null, cancellationToken }, "GetWorkItemsAsync");
 
             var workItem = await WorkItemClient.GetWorkItemAsync(id, null, asOf, WorkItemExpand.Relations, userState: null, cancellationToken)
                                                .ConfigureAwait(false);
@@ -133,9 +139,11 @@ namespace Julmar.AzDOUtilities
             if (errorPolicy == null)
                 errorPolicy = ErrorPolicy;
 
+            using var mc = log?.Enter(LogLevel.RawApis, new object[] { wiql, timePrecision, top, null, cancellationToken }, "QueryByWiqlAsync");
+
             // Return a list of URLs + Ids for matching workItems.
             WorkItemQueryResult queryResult = await WorkItemClient.QueryByWiqlAsync(wiql, timePrecision, top, userState: null, cancellationToken)
-                                                          .ConfigureAwait(false);
+                                                            .ConfigureAwait(false);
             if (queryResult.WorkItems.Any())
             {
                 var ids = queryResult.WorkItems.Select(wi => wi.Id).ToList();
@@ -153,8 +161,8 @@ namespace Julmar.AzDOUtilities
             if (this.ValidateOnly)
                 validateOnly = true;
 
+            using var mc = log?.Enter(LogLevel.RawApis, new object[] { patchDocument, projectName, workItemType, validateOnly, bypassRules, null, cancellationToken }, "CreateWorkItemAsync");
             log?.Dump(patchDocument);
-
             return await WorkItemClient.CreateWorkItemAsync(patchDocument, projectName, workItemType, validateOnly, bypassRules, userState: null, cancellationToken)
                                .ConfigureAwait(false);
         }
@@ -165,6 +173,7 @@ namespace Julmar.AzDOUtilities
             if (this.ValidateOnly)
                 validateOnly = true;
 
+            using var mc = log?.Enter(LogLevel.RawApis, new object[] { patchDocument, id, validateOnly, bypassRules, supressNotifications, expand, null, cancellationToken }, "UpdateWorkItemAsync");
             log?.Dump(patchDocument);
 
             return await WorkItemClient.UpdateWorkItemAsync(patchDocument, id, validateOnly, bypassRules, supressNotifications, expand, userState: null, cancellationToken)
@@ -175,6 +184,7 @@ namespace Julmar.AzDOUtilities
         {
             if (parent.Children == null)
             {
+                using var mc = log?.Enter(LogLevel.RawApis, new object[] { projectName, parent.Path, QueryExpand.All, 2, includeDeleted, null, cancellationToken }, "GetQueryAsync");
                 parent = await WorkItemClient.GetQueryAsync(projectName, parent.Path, QueryExpand.All, depth: 2, includeDeleted, userState: null, cancellationToken);
             }
 

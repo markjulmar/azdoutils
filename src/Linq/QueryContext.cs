@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Julmar.AzDOUtilities.Linq
 {
@@ -13,11 +14,11 @@ namespace Julmar.AzDOUtilities.Linq
     class QueryContext<T> : IQueryContext
     {
         readonly string project;
-        readonly IAzureDevOpsService service;
+        readonly AzDOService service;
 
         public QueryContext(IAzureDevOpsService service, string project)
         {
-            this.service = service ?? throw new ArgumentNullException(nameof(service));
+            this.service = service as AzDOService ?? throw new ArgumentNullException(nameof(service));
             this.project = project;
         }
 
@@ -126,7 +127,7 @@ namespace Julmar.AzDOUtilities.Linq
                     query += item;
             }
 
-            var items = service.QueryAsync(query, take).Result;
+            var items = service.QueryForTypeAsync(typeof(T), query, take, null, CancellationToken.None).Result;
             return items.Cast<T>();
         }
 
