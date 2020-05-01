@@ -14,6 +14,7 @@ dotnet add package Julmar.AzDOUtilities --version 1.4.0-prerelease
 
 | Version | Changes  |
 |---------|----------|
+| **1.5-pre**  | Optimize the LINQ query parser to support `Take` and restrict the fields to the queried type if possible.
 | **1.4-pre**  | Some refactoring - removed the raw interface.
 | **1.1-pre**  | Added `Relationship` enum and new `IAzureDevOpsService.AddRelationshipAsync` method and moved to Julmar.AzDOUtilities. |
 | **1.01-pre** | Optimized some calling paths for async. |
