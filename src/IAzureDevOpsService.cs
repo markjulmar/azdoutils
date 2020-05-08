@@ -89,6 +89,15 @@ namespace Julmar.AzDOUtilities
         Task<WorkItem> GetAsync(int id, DateTime? asOf = null, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieve a set of WorkItems by ID
+        /// </summary>
+        /// <param name="ids">IDs to retrieve</param>
+        /// <param name="asOf">Optional date - if supplied, the state if the WorkItem will be as of the given date.</param>
+        /// <param name="cancellationToken">Optional cancelation token</param>
+        /// <returns>List of WorkItems matching Ids</returns>
+        Task<IEnumerable<WorkItem>> GetAsync(IEnumerable<int> ids, DateTime? asOf = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves all the related WorkItem ids to a given WorkItem.
         /// </summary>
         /// <param name="id">ID of the WorkItem</param>

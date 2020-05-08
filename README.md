@@ -14,6 +14,7 @@ dotnet add package Julmar.AzDOUtilities --version 1.4.0-prerelease
 
 | Version | Changes  |
 |---------|----------|
+| **1.5.2-pre** | Added new `GetAsync` to retrieve a set of Ids. |
 | **1.5.1-pre** | Updated TeamFoundation package to latest. |
 | **1.5-pre**  | Optimize the LINQ query parser to support `Take` and restrict the fields to the queried type if possible. |
 | **1.4-pre**  | Some refactoring - removed the raw interface. |

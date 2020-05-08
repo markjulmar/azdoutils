@@ -134,6 +134,14 @@ namespace Julmar.AzDOUtilities
             return null;
         }
 
+        public async Task<IEnumerable<WorkItem>> GetAsync(IEnumerable<int> ids, DateTime? asOf, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { ids, asOf, cancellationToken });
+            var wits = await InternalGetWitsByIdChunked(ids.ToList(), ReflectionHelpers.GetAllFields(this),
+                                    asOf, WorkItemExpand.None, ErrorPolicy, cancellationToken).ConfigureAwait(false);
+            return ReflectionHelpers.MapWorkItemTypes(wits);
+        }
+
         public Task AddChildAsync(WorkItem parent, WorkItem child, CancellationToken cancellationToken)
         {
             using var mc = log?.Enter(new object[] { parent, child, cancellationToken  });
