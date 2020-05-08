@@ -144,7 +144,7 @@ namespace Julmar.AzDOUtilities
             // Return a list of URLs + Ids for matching workItems.
             WorkItemQueryResult queryResult = await WorkItemClient.QueryByWiqlAsync(wiql, timePrecision, top, userState: null, cancellationToken)
                                                             .ConfigureAwait(false);
-            if (queryResult.WorkItems.Any())
+            if (queryResult.WorkItems?.Any() == true)
             {
                 var ids = queryResult.WorkItems.Select(wi => wi.Id).ToList();
 
@@ -281,5 +281,7 @@ namespace Julmar.AzDOUtilities
                 owner.Initialize(wit);
             }
         }
+
+        
     }
 }
