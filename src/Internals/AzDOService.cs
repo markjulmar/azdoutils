@@ -198,6 +198,17 @@ namespace Julmar.AzDOUtilities
             return InternalRemoveRelationshipAsync(owner, relatedItems, cancellationToken);
         }
 
+        public async Task<IEnumerable<WorkItemLink>> QueryLinkedRelationshipsAsync(string query, int? top, bool? timePrecision, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { query, top, timePrecision, cancellationToken });
+
+            var wiql = new Wiql { Query = query };
+
+            var results = await WorkItemClient.QueryByWiqlAsync(wiql, timePrecision, top, userState: null, cancellationToken)
+                                              .ConfigureAwait(false);
+            return results.WorkItemRelations ?? Enumerable.Empty<WorkItemLink>();
+        }
+
         public async Task<IEnumerable<WorkItem>> GetRelatedAsync(WorkItem owner, DateTime? asOf, CancellationToken cancellationToken)
         {
             if (owner is null)
@@ -210,8 +221,8 @@ namespace Julmar.AzDOUtilities
             var relatedIds = (await InternalGetRelatedIdsAsync(owner.Id.Value, RelationshipLinkText[(int)Relationship.Related], asOf, cancellationToken)
                                             .ConfigureAwait(false)).Where(rid => rid.RelatedId.HasValue).Select(rid => rid.RelatedId.Value).ToList();
             var wits = await InternalGetWitsByIdChunked(relatedIds, ReflectionHelpers.GetAllFields(this), asOf,
-                                                        WorkItemExpand.None, ErrorPolicy, cancellationToken).ConfigureAwait(false);
-
+                                                        WorkItemExpand.None, ErrorPolicy, cancellationToken)
+                                            .ConfigureAwait(false);
             return ReflectionHelpers.MapWorkItemTypes(wits);
         }
 

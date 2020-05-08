@@ -98,6 +98,16 @@ namespace Julmar.AzDOUtilities
         Task<IEnumerable<WorkItem>> GetAsync(IEnumerable<int> ids, DateTime? asOf = null, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Executes a linked query and returns the relationships.
+        /// </summary>
+        /// <param name="query">Query to execute</param>
+        /// <param name="top"># of items to retrieve, pass null for all matching (up to 20000)</param>
+        /// <param name="timePrecision">True to match Date/Time vs. just date</param>
+        /// <param name="cancellationToken">Optional cancellation token</param>
+        /// <returns>A set of relationship links (source/target/relationship) based on the query</returns>
+        Task<IEnumerable<WorkItemLink>> QueryLinkedRelationshipsAsync(string query, int? top = null, bool? timePrecision = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves all the related WorkItem ids to a given WorkItem.
         /// </summary>
         /// <param name="id">ID of the WorkItem</param>
