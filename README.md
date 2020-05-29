@@ -7,7 +7,7 @@ The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps
 It's packaged as a [NuGet package](https://www.nuget.org/packages/Julmar.AzDOUtilities/). You can add it to your project with the following command.
 
 ```bash
-dotnet add package Julmar.AzDOUtilities --version 1.4.0-prerelease
+dotnet add package Julmar.AzDOUtilities --version 1.6.1-prerelease
 ```
 
 ## Release notes
