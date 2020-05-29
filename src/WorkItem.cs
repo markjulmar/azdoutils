@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
@@ -15,27 +16,32 @@ namespace Julmar.AzDOUtilities
     /// </summary>
     public class WorkItem
     {
-        private WitModel workItem;
+        private WitModel witModel;
+
+        /// <summary>
+        /// Fields we loaded from the WIT
+        /// </summary>
+        public IEnumerable<string> ValidFields => witModel?.Fields.Keys;
 
         /// <summary>
         /// Unique id for the WorkItem. Null if not created or mapped to AzDO.
         /// </summary>
-        public int? Id => workItem?.Id;
+        public int? Id => witModel?.Id;
 
         /// <summary>
         /// Current revision for the WorkItem
         /// </summary>
-        public int? Revision => workItem?.Rev;
+        public int? Revision => witModel?.Rev;
 
         /// <summary>
         /// URL for the WorkItem in Azure DevOps.
         /// </summary>
-        public string Url => workItem?.Url;
+        public string Url => witModel?.Url;
 
         /// <summary>
         /// True if this is a new WorkItem that is not on the server.
         /// </summary>
-        public bool IsNew => workItem == null;
+        public bool IsNew => witModel == null;
 
         [AzDOField(Field.ChangedDate, IsReadOnly = true)]
         public DateTime? ChangedDate { get; protected set; }
@@ -113,16 +119,18 @@ namespace Julmar.AzDOUtilities
         internal void Initialize(WitModel workItem)
         {
             if (workItem == null)
+            {
                 throw new ArgumentNullException(nameof(workItem));
+            }
 
-            if (this.workItem != null
-                && this.workItem.Id != workItem.Id)
+            if (this.witModel != null
+                && this.witModel.Id != workItem.Id)
             {
                 throw new ArgumentException("WorkItem Id mismatch", nameof(workItem));
             }
 
-            if (!object.ReferenceEquals(workItem, this.workItem))
-                this.workItem = workItem;
+            if (!object.ReferenceEquals(workItem, this.witModel))
+                this.witModel = workItem;
 
             this.ResetToInitialState();
         }
@@ -134,11 +142,11 @@ namespace Julmar.AzDOUtilities
         /// <param name="fieldName">Field ReferenceName in Azure DevOps</param>
         /// <param name="value">Output value</param>
         /// <returns>True if the field value is set, false if not.</returns>
-        protected internal bool TryGetInitialValue<T>(string fieldName, out T value)
+        public bool TryGetFieldValue<T>(string fieldName, out T value)
         {
-            if (workItem != null)
+            if (witModel != null)
             {
-                if (workItem.Fields.TryGetValue(fieldName, out object field) == true)
+                if (witModel.Fields.TryGetValue(fieldName, out object field) == true)
                 {
                     value = (T)field;
                     return true;
@@ -156,8 +164,11 @@ namespace Julmar.AzDOUtilities
         {
             get
             {
-                bool isChanged = false;
-                ProcessFieldProperties((_,__,___, changed) => { isChanged = changed; return !changed; /*stop on 1st change*/ });
+                bool isChanged = addComments != null;
+                if(!isChanged)
+                {
+                    ProcessFieldProperties((_, __, ___, changed) => { isChanged = changed; return !changed; /*stop on 1st change*/ });
+                }
                 return isChanged;
             }
         }
@@ -206,9 +217,19 @@ namespace Julmar.AzDOUtilities
                 return true;
             });
 
+            if (addComments != null)
+            {
+                document.Add(new JsonPatchOperation
+                {
+                    Operation = Operation.Add,
+                    Path = $"/fields/System.History",
+                    Value = addComments.ToString()
+                });
+            }
+
             if (document.Count > 0)
             {
-                if (workItem != null)
+                if (witModel != null)
                 {
                     document.Insert(0, new JsonPatchOperation
                     {
@@ -239,7 +260,7 @@ namespace Julmar.AzDOUtilities
                 if (fieldInfo?.IsReadOnly == false)
                 {
                     object currentValue = prop.GetValue(this);
-                    TryGetInitialValue(fieldInfo.FieldName, out object initialValue);
+                    TryGetFieldValue(fieldInfo.FieldName, out object initialValue);
 
                     bool? changed = null;
                     if (fieldInfo.Converter != null)
@@ -306,13 +327,15 @@ namespace Julmar.AzDOUtilities
         /// </summary>
         public void ResetToInitialState()
         {
+            addComments = null;
+
             foreach (var prop in GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
                                           .Where(p => p.CanWrite))
             {
                 var fieldInfo = prop.GetCustomAttribute<AzDOFieldAttribute>();
                 if (fieldInfo != null)
                 {
-                    bool foundValue = TryGetInitialValue(fieldInfo.FieldName, out object initialValue);
+                    bool foundValue = TryGetFieldValue(fieldInfo.FieldName, out object initialValue);
 
                     try
                     {
@@ -382,6 +405,17 @@ namespace Julmar.AzDOUtilities
         public void ChangeType(string newWitType)
         {
             this.WorkItemType = newWitType;
+        }
+
+        StringBuilder addComments;
+        public void AddCommentToHistory(string text)
+        {
+            if (addComments == null)
+            {
+                addComments = new StringBuilder();
+            }
+
+            addComments.AppendLine(text);
         }
 
         /// <summary>

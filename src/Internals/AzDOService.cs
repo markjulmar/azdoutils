@@ -7,14 +7,13 @@ using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi;
-using Microsoft.VisualStudio.Services.WebApi.Patch;
-using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
 namespace Julmar.AzDOUtilities
 {
     sealed partial class AzDOService : IAzureDevOpsService
     {
         public WorkItemTrackingHttpClient WorkItemClient => httpClient.Value;
+        public VssConnection Connection => connection.Value;
         public ProjectHttpClient ProjectClient => projectClient.Value;
         public WorkItemErrorPolicy? ErrorPolicy { get; set; }
         public bool ValidateOnly { get; set; }
@@ -327,20 +326,15 @@ namespace Julmar.AzDOUtilities
                 throw new Exception("Must set WorkItemType on WorkItem before adding to Azure DevOps.");
             }
 
+            if (!string.IsNullOrWhiteSpace(comment))
+            {
+                workItem.AddCommentToHistory(comment);
+            }
+
             var patchDocument = workItem.CreatePatchDocument();
             if (patchDocument == null)
             {
                 throw new Exception("Patch document couldn't be created from Workitem.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(comment))
-            {
-                patchDocument.Add(new JsonPatchOperation
-                {
-                    Operation = Operation.Add,
-                    Path = $"/fields/System.History",
-                    Value = comment
-                });
             }
 
             var wit = await this.AddAsync(patchDocument, projectName, workItemType, validateOnly, bypassRules, cancellationToken)
@@ -356,19 +350,17 @@ namespace Julmar.AzDOUtilities
             if (workItem.IsNew)
                 throw new ArgumentException("Cannot update a new WorkItem.", nameof(workItem));
 
-            var patchDocument = workItem.CreatePatchDocument();
-            if (patchDocument == null)
+            if (!workItem.HasChanges)
                 return;
 
             if (!string.IsNullOrWhiteSpace(comment))
             {
-                patchDocument.Add(new JsonPatchOperation
-                {
-                    Operation = Operation.Add,
-                    Path = $"/fields/System.History",
-                    Value = comment
-                });
+                workItem.AddCommentToHistory(comment);
             }
+
+            var patchDocument = workItem.CreatePatchDocument();
+            if (patchDocument == null)
+                return;
 
             var wit = await this.UpdateAsync(workItem.Id.Value, patchDocument, validateOnly, bypassRules, supressNotifications: null,
                                                 WorkItemExpand.Fields, cancellationToken)

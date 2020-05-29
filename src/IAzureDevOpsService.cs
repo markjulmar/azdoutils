@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
+using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Julmar.AzDOUtilities
 {
@@ -13,6 +14,11 @@ namespace Julmar.AzDOUtilities
     /// </summary>
     public interface IAzureDevOpsService
     {
+        /// <summary>
+        /// Connection to the underlying VSTS services
+        /// </summary>
+        public VssConnection Connection { get; }
+
         /// <summary>
         /// WorkItem client for raw access
         /// </summary>

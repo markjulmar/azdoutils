@@ -7,6 +7,7 @@ using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
@@ -41,6 +42,7 @@ namespace Julmar.AzDOUtilities
 
         private readonly Lazy<VssCredentials> credentials;
         private readonly Lazy<WorkItemTrackingHttpClient> httpClient;
+        private readonly Lazy<VssConnection> connection;
         private readonly Lazy<ProjectHttpClient> projectClient;
         internal TraceHelpers log;
 
@@ -57,6 +59,7 @@ namespace Julmar.AzDOUtilities
             }
 
             this.credentials = new Lazy<VssCredentials>(() => new VssBasicCredential(string.Empty, accessToken));
+            this.connection = new Lazy<VssConnection>(() => new VssConnection(new Uri(uri), credentials.Value));
             this.httpClient = new Lazy<WorkItemTrackingHttpClient>(() => new WorkItemTrackingHttpClient(new Uri(uri), credentials.Value));
             this.projectClient = new Lazy<ProjectHttpClient>(() => new ProjectHttpClient(new Uri(uri), credentials.Value));
         }

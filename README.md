@@ -14,6 +14,7 @@ dotnet add package Julmar.AzDOUtilities --version 1.4.0-prerelease
 
 | Version | Changes  |
 |---------|----------|
+| **1.6.1-pre** | Added `ValidFields` to `WorkItem` type to retrieve field names. Added `Connection` to provide underlying access to the `VssConnection` to retrieve other types. |
 | **1.6-pre** | Added new `QueryLinkedRelationshipsAsync` method to retrieve work item links. |
 | **1.5.2-pre** | Added new `GetAsync` to retrieve a set of Ids. |
 | **1.5.1-pre** | Updated TeamFoundation package to latest. |
