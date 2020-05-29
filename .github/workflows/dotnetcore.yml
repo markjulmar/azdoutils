@@ -24,3 +24,8 @@ jobs:
     - name: Test
       working-directory: ./src
       run: dotnet test --no-restore --verbosity normal
+    - name: Pack
+      run: dotnet pack --output nuget-packages --configuration Release
+    - name: Push to NuGet
+      run: dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
