@@ -166,7 +166,7 @@ namespace Julmar.AzDOUtilities
         /// <param name="child">Child</param>
         /// <param name="bypassRules"><see langword="true"/>to bypass any WorkItem rules</param>
         /// <param name="cancellationToken">Optional cancelation token</param>
-        Task AddChildAsync(WorkItem parent, WorkItem child, bool bypassRules = true, CancellationToken cancellationToken = default);
+        Task AddChildAsync(WorkItem parent, WorkItem child, bool bypassRules, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Add multiple children to a WorkItem
@@ -183,7 +183,7 @@ namespace Julmar.AzDOUtilities
         /// <param name="children">Child work items</param>
         /// <param name="bypassRules"><see langword="true"/>to bypass any WorkItem rules</param>
         /// <param name="cancellationToken">Optional cancelation token</param>
-        Task AddChildrenAsync(WorkItem parent, IEnumerable<WorkItem> children, bool bypassRules = true, CancellationToken cancellationToken = default);
+        Task AddChildrenAsync(WorkItem parent, IEnumerable<WorkItem> children, bool bypassRules, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Add a new related item to a WorkItem
@@ -200,7 +200,7 @@ namespace Julmar.AzDOUtilities
         /// <param name="relatedItem">Related Work Item</param>
         /// <param name="bypassRules"><see langword="true"/>to bypass any WorkItem rules</param>
         /// <param name="cancellationToken">Optional cancelation token</param>
-        Task AddRelatedAsync(WorkItem owner, WorkItem relatedItem, bool bypassRules = true, CancellationToken cancellationToken = default);
+        Task AddRelatedAsync(WorkItem owner, WorkItem relatedItem, bool bypassRules, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Add multiple related items to a WorkItem
@@ -217,7 +217,7 @@ namespace Julmar.AzDOUtilities
         /// <param name="relatedItems">Related Work Items</param>
         /// <param name="bypassRules"><see langword="true"/>to bypass any WorkItem rules</param>
         /// <param name="cancellationToken">Optional cancelation token</param>
-        Task AddRelatedAsync(WorkItem owner, IEnumerable<WorkItem> relatedItems, bool bypassRules = true, CancellationToken cancellationToken = default);
+        Task AddRelatedAsync(WorkItem owner, IEnumerable<WorkItem> relatedItems, bool bypassRules, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Add a new related item to a WorkItem
@@ -236,7 +236,7 @@ namespace Julmar.AzDOUtilities
         /// <param name="relatedItem">Related Work Item</param>
         /// <param name="bypassRules"><see langword="true"/>to bypass any WorkItem rules</param>
         /// <param name="cancellationToken">Optional cancelation token</param>
-        Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, WorkItem relatedItem, bool bypassRules = true, CancellationToken cancellationToken = default);
+        Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, WorkItem relatedItem, bool bypassRules, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Add multiple related items to a WorkItem
@@ -255,7 +255,7 @@ namespace Julmar.AzDOUtilities
         /// <param name="relatedItems">Related Work Items</param>
         /// <param name="bypassRules"><see langword="true"/>to bypass any WorkItem rules</param>
         /// <param name="cancellationToken">Optional cancelation token</param>
-        Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, IEnumerable<WorkItem> relatedItems, bool bypassRules = true, CancellationToken cancellationToken = default);
+        Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, IEnumerable<WorkItem> relatedItems, bool bypassRules, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Remove a related item (child, related)
