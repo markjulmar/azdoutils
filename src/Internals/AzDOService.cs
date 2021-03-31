@@ -144,25 +144,49 @@ namespace Julmar.AzDOUtilities
         public Task AddChildAsync(WorkItem parent, WorkItem child, CancellationToken cancellationToken)
         {
             using var mc = log?.Enter(new object[] { parent, child, cancellationToken  });
-            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, new[] { child }, cancellationToken);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, new[] { child }, true, cancellationToken);
+        }
+
+        public Task AddChildAsync(WorkItem parent, WorkItem child, bool bypassRules, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { parent, child, bypassRules, cancellationToken });
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, new[] { child }, bypassRules, cancellationToken);
         }
 
         public Task AddChildrenAsync(WorkItem parent, IEnumerable<WorkItem> children, CancellationToken cancellationToken)
         {
             using var mc = log?.Enter(new object[] { parent, children, cancellationToken });
-            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, children, cancellationToken);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, children, true, cancellationToken);
+        }
+
+        public Task AddChildrenAsync(WorkItem parent, IEnumerable<WorkItem> children, bool bypassRules, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { parent, children, bypassRules, cancellationToken });
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Child], parent, children, bypassRules, cancellationToken);
         }
 
         public Task AddRelatedAsync(WorkItem owner, WorkItem relatedItem, CancellationToken cancellationToken)
         {
             using var mc = log?.Enter(new object[] { owner, relatedItem, cancellationToken });
-            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, new[] { relatedItem }, cancellationToken);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, new[] { relatedItem }, true, cancellationToken);
+        }
+
+        public Task AddRelatedAsync(WorkItem owner, WorkItem relatedItem, bool bypassRules, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { owner, relatedItem, bypassRules, cancellationToken });
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, new[] { relatedItem }, bypassRules, cancellationToken);
         }
 
         public Task AddRelatedAsync(WorkItem owner, IEnumerable<WorkItem> relatedItems, CancellationToken cancellationToken)
         {
             using var mc = log?.Enter(new object[] { owner, relatedItems, cancellationToken });
-            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, relatedItems, cancellationToken);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, relatedItems, true, cancellationToken);
+        }
+
+        public Task AddRelatedAsync(WorkItem owner, IEnumerable<WorkItem> relatedItems, bool bypassRules, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { owner, relatedItems, bypassRules, cancellationToken });
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)Relationship.Related], owner, relatedItems, bypassRules, cancellationToken);
         }
 
         public Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, WorkItem relatedItem, CancellationToken cancellationToken)
@@ -172,8 +196,19 @@ namespace Julmar.AzDOUtilities
             if (relationshipType == Relationship.Other || !Enum.IsDefined(typeof(Relationship), relationshipType))
                 throw new ArgumentOutOfRangeException(nameof(relationshipType));
 
-            return InternalAddRelationshipAsync(RelationshipLinkText[(int)relationshipType], owner, new[] { relatedItem }, cancellationToken);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)relationshipType], owner, new[] { relatedItem }, true, cancellationToken);
         }
+
+        public Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, WorkItem relatedItem, bool bypassRules, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { relationshipType, owner, relatedItem, bypassRules, cancellationToken });
+
+            if (relationshipType == Relationship.Other || !Enum.IsDefined(typeof(Relationship), relationshipType))
+                throw new ArgumentOutOfRangeException(nameof(relationshipType));
+
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)relationshipType], owner, new[] { relatedItem }, bypassRules, cancellationToken);
+        }
+
 
         public Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, IEnumerable<WorkItem> relatedItems, CancellationToken cancellationToken)
         {
@@ -182,8 +217,19 @@ namespace Julmar.AzDOUtilities
             if (relationshipType == Relationship.Other || !Enum.IsDefined(typeof(Relationship), relationshipType))
                 throw new ArgumentOutOfRangeException(nameof(relationshipType));
 
-            return InternalAddRelationshipAsync(RelationshipLinkText[(int)relationshipType], owner, relatedItems, cancellationToken);
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)relationshipType], owner, relatedItems, true, cancellationToken);
         }
+
+        public Task AddRelationshipAsync(WorkItem owner, Relationship relationshipType, IEnumerable<WorkItem> relatedItems, bool bypassRules, CancellationToken cancellationToken)
+        {
+            using var mc = log?.Enter(new object[] { relationshipType, owner, relatedItems, bypassRules, cancellationToken });
+
+            if (relationshipType == Relationship.Other || !Enum.IsDefined(typeof(Relationship), relationshipType))
+                throw new ArgumentOutOfRangeException(nameof(relationshipType));
+
+            return InternalAddRelationshipAsync(RelationshipLinkText[(int)relationshipType], owner, relatedItems, bypassRules, cancellationToken);
+        }
+
 
         public Task RemoveRelationshipAsync(WorkItem owner, WorkItem relatedItem, CancellationToken cancellationToken)
         {

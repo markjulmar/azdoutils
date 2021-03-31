@@ -203,7 +203,7 @@ namespace Julmar.AzDOUtilities
             return parent;
         }
 
-        private async Task InternalAddRelationshipAsync(string linkType, WorkItem owner, IEnumerable<WorkItem> relatedItems, CancellationToken cancellationToken)
+        private async Task InternalAddRelationshipAsync(string linkType, WorkItem owner, IEnumerable<WorkItem> relatedItems, bool bypassRules, CancellationToken cancellationToken)
         {
             if (owner is null)
                 throw new ArgumentNullException(nameof(owner));
@@ -230,7 +230,7 @@ namespace Julmar.AzDOUtilities
                 });
             }
 
-            var wit = await UpdateAsync(owner.Id.Value, patchDocument, this.ValidateOnly, bypassRules: true,
+            var wit = await UpdateAsync(owner.Id.Value, patchDocument, this.ValidateOnly, bypassRules: bypassRules,
                                         supressNotifications: null, WorkItemExpand.Fields, cancellationToken)
                               .ConfigureAwait(false);
             log?.WriteLine(LogLevel.PatchDocument, $"WorkItem {owner.Id} updated from Rev {owner.Revision} to {wit.Rev}");
