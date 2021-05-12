@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Julmar.AzDOUtilities</PackageId>
-    <Version>1.2.0</Version>
-    <PackageVersion>1.7.0-prerelease</PackageVersion>
+    <Version>1.7.1</Version>
+    <PackageVersion>1.7.1-prerelease</PackageVersion>
     <Authors>Mark Smith</Authors>
     <CompanyName>julmar.com</CompanyName>
     <Description>This client library provides a type-safe wrapper to work with the Azure DevOps REST API.</Description>
@@ -15,7 +15,7 @@
     <Summary>Wrapper around Azure DevOps</Summary>
     <Title>Azure DevOps Utility Library</Title>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <ReleaseVersion>1.6.1</ReleaseVersion>
+    <ReleaseVersion>1.7.1</ReleaseVersion>
     <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
 
