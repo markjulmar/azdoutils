@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 
@@ -32,6 +33,11 @@ namespace Julmar.AzDOUtilities
         /// Current revision for the WorkItem
         /// </summary>
         public int? Revision => witModel?.Rev;
+
+        /// <summary>
+        /// Relations of the work item.
+        /// </summary>
+        public IList<WorkItemRelation> Relations => witModel?.Relations;
 
         /// <summary>
         /// URL for the WorkItem in Azure DevOps.
