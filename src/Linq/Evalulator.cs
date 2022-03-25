@@ -1,106 +1,108 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace Julmar.AzDOUtilities.Linq
+namespace Julmar.AzDOUtilities.Linq;
+
+/// <summary>
+/// LINQ evaluator
+/// </summary>
+static class Evaluator
 {
-    static class Evaluator
+    /// <summary> 
+    /// Performs evaluation and replacement of independent sub-trees 
+    /// </summary> 
+    /// <param name="expression">The root of the expression tree.</param>
+    /// <param name="fnCanBeEvaluated">A function that decides whether a given expression node can be part of the local function.</param>
+    /// <returns>A new tree with sub-trees evaluated and replaced.</returns> 
+    public static Expression? PartialEval(Expression expression, Func<Expression, bool> fnCanBeEvaluated) 
+        => new SubtreeEvaluator(new Nominator(fnCanBeEvaluated).Nominate(expression)).Eval(expression);
+
+    /// <summary> 
+    /// Performs evaluation and replacement of independent sub-trees 
+    /// </summary> 
+    /// <param name="expression">The root of the expression tree.</param>
+    /// <returns>A new tree with sub-trees evaluated and replaced.</returns> 
+    public static Expression? PartialEval(Expression expression) => PartialEval(expression, CanBeEvaluatedLocally);
+
+    private static bool CanBeEvaluatedLocally(Expression expression) => expression.NodeType != ExpressionType.Parameter;
+
+    /// <summary> 
+    /// Evaluates and replaces sub-trees when first candidate is reached (top-down) 
+    /// </summary> 
+    class SubtreeEvaluator : ExpressionVisitor
     {
-        /// <summary> 
-        /// Performs evaluation & replacement of independent sub-trees 
-        /// </summary> 
-        /// <param name="expression">The root of the expression tree.</param>
-        /// <param name="fnCanBeEvaluated">A function that decides whether a given expression node can be part of the local function.</param>
-        /// <returns>A new tree with sub-trees evaluated and replaced.</returns> 
-        public static Expression PartialEval(Expression expression, Func<Expression, bool> fnCanBeEvaluated) => new SubtreeEvaluator(new Nominator(fnCanBeEvaluated).Nominate(expression)).Eval(expression);
+        private readonly HashSet<Expression> candidates;
 
-        /// <summary> 
-        /// Performs evaluation & replacement of independent sub-trees 
-        /// </summary> 
-        /// <param name="expression">The root of the expression tree.</param>
-        /// <returns>A new tree with sub-trees evaluated and replaced.</returns> 
-        public static Expression PartialEval(Expression expression) => PartialEval(expression, CanBeEvaluatedLocally);
-
-        private static bool CanBeEvaluatedLocally(Expression expression) => expression.NodeType != ExpressionType.Parameter;
-
-        /// <summary> 
-        /// Evaluates & replaces sub-trees when first candidate is reached (top-down) 
-        /// </summary> 
-        class SubtreeEvaluator : ExpressionVisitor
+        internal SubtreeEvaluator(HashSet<Expression> candidates)
         {
-            HashSet<Expression> candidates;
-
-            internal SubtreeEvaluator(HashSet<Expression> candidates)
-            {
-                this.candidates = candidates;
-            }
-
-            internal Expression Eval(Expression exp) => this.Visit(exp);
-
-            public override Expression Visit(Expression exp)
-            {
-                return exp == null
-                    ? null
-                    : this.candidates.Contains(exp)
-                        ? this.Evaluate(exp)
-                        : base.Visit(exp);
-            }
-
-            private Expression Evaluate(Expression e)
-            {
-                if (e.NodeType == ExpressionType.Constant)
-                    return e;
-
-                LambdaExpression lambda = Expression.Lambda(e);
-                Delegate fn = lambda.Compile();
-                return Expression.Constant(fn.DynamicInvoke(null), e.Type);
-            }
+            this.candidates = candidates;
         }
 
-        /// <summary> 
-        /// Performs bottom-up analysis to determine which nodes can possibly 
-        /// be part of an evaluated sub-tree. 
-        /// </summary> 
-        class Nominator : ExpressionVisitor
+        internal Expression? Eval(Expression? exp) => this.Visit(exp);
+
+        public override Expression? Visit(Expression? exp)
         {
-            Func<Expression, bool> fnCanBeEvaluated;
-            HashSet<Expression> candidates;
-            bool cannotBeEvaluated;
+            return exp == null
+                ? null
+                : this.candidates.Contains(exp)
+                    ? Evaluate(exp)
+                    : base.Visit(exp);
+        }
 
-            internal Nominator(Func<Expression, bool> fnCanBeEvaluated)
-            {
-                this.fnCanBeEvaluated = fnCanBeEvaluated;
-            }
+        private static Expression Evaluate(Expression e)
+        {
+            if (e.NodeType == ExpressionType.Constant)
+                return e;
 
-            internal HashSet<Expression> Nominate(Expression expression)
-            {
-                this.candidates = new HashSet<Expression>();
-                this.Visit(expression);
-                return this.candidates;
-            }
+            var lambda = Expression.Lambda(e);
+            var fn = lambda.Compile();
+            return Expression.Constant(fn.DynamicInvoke(null), e.Type);
+        }
+    }
 
-            public override Expression Visit(Expression expression)
+    /// <summary> 
+    /// Performs bottom-up analysis to determine which nodes can possibly 
+    /// be part of an evaluated sub-tree. 
+    /// </summary> 
+    class Nominator : ExpressionVisitor
+    {
+        private readonly Func<Expression, bool> fnCanBeEvaluated;
+        private readonly HashSet<Expression> candidates;
+        private bool cannotBeEvaluated;
+
+        internal Nominator(Func<Expression, bool> fnCanBeEvaluated)
+        {
+            this.fnCanBeEvaluated = fnCanBeEvaluated;
+            this.candidates = new HashSet<Expression>();
+        }
+
+        internal HashSet<Expression> Nominate(Expression? expression)
+        { 
+            candidates.Clear();
+            Visit(expression);
+            return candidates;
+        }
+
+        public override Expression? Visit(Expression? expression)
+        {
+            if (expression != null)
             {
-                if (expression != null)
+                bool saveCannotBeEvaluated = this.cannotBeEvaluated;
+                this.cannotBeEvaluated = false;
+                base.Visit(expression);
+                if (!this.cannotBeEvaluated)
                 {
-                    bool saveCannotBeEvaluated = this.cannotBeEvaluated;
-                    this.cannotBeEvaluated = false;
-                    base.Visit(expression);
-                    if (!this.cannotBeEvaluated)
+                    if (this.fnCanBeEvaluated(expression))
                     {
-                        if (this.fnCanBeEvaluated(expression))
-                        {
-                            this.candidates.Add(expression);
-                        }
-                        else
-                        {
-                            this.cannotBeEvaluated = true;
-                        }
+                        this.candidates.Add(expression);
                     }
-                    this.cannotBeEvaluated |= saveCannotBeEvaluated;
+                    else
+                    {
+                        this.cannotBeEvaluated = true;
+                    }
                 }
-                return expression;
+                this.cannotBeEvaluated |= saveCannotBeEvaluated;
             }
+            return expression;
         }
     }
 }

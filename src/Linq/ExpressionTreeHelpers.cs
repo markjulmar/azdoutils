@@ -1,103 +1,86 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace Julmar.AzDOUtilities.Linq
+namespace Julmar.AzDOUtilities.Linq;
+
+/// <summary>
+/// LINQ expression helpers
+/// </summary>
+static class ExpressionTreeHelpers
 {
-    class ExpressionTreeHelpers
+    internal static readonly Dictionary<ExpressionType, string> SupportedComparisons = new()
     {
-        internal static Dictionary<ExpressionType, string> SupportedComparisons = new Dictionary<ExpressionType, string>()
-        {
-            { ExpressionType.Equal, "=" },
-            { ExpressionType.NotEqual, "<>" },
-            { ExpressionType.GreaterThan, ">" },
-            { ExpressionType.GreaterThanOrEqual, ">=" },
-            { ExpressionType.LessThan, "<" },
-            { ExpressionType.LessThanOrEqual, "<=" }
-        };
+        { ExpressionType.Equal, "=" },
+        { ExpressionType.NotEqual, "<>" },
+        { ExpressionType.GreaterThan, ">" },
+        { ExpressionType.GreaterThanOrEqual, ">=" },
+        { ExpressionType.LessThan, "<" },
+        { ExpressionType.LessThanOrEqual, "<=" }
+    };
 
-        internal static bool IsMatchingMemberValueExpression(Expression exp, Type declaringType, string memberName)
-        {
-            if (!SupportedComparisons.ContainsKey(exp.NodeType))
-                return false;
-
-            BinaryExpression be = (BinaryExpression) exp;
-
-            if (IsSpecificMemberExpression(be.Left, declaringType, memberName) &&
-                IsSpecificMemberExpression(be.Right, declaringType, memberName))
-                throw new Exception("Cannot have 'member' on both sides of an expression.");
-
-            return IsSpecificMemberExpression(be.Left, declaringType, memberName) ||
-                IsSpecificMemberExpression(be.Right, declaringType, memberName);
-        }
-
-        internal static bool IsSpecificMemberExpression(Expression exp, Type declaringType, string memberName)
-        {
-            if (exp is MemberExpression mexp)
-            {
-                while (declaringType != null)
-                {
-                    if (mexp.Member.DeclaringType == declaringType
-                        && mexp.Member.Name == memberName)
-                        return true;
-                    declaringType = declaringType.BaseType;
-                }
-            }
-
+    internal static bool IsMatchingMemberValueExpression(Expression exp, Type declaringType, string memberName)
+    {
+        if (!SupportedComparisons.ContainsKey(exp.NodeType))
             return false;
-        }
 
-        internal static string GetValueFromExpression(BinaryExpression be, Type memberDeclaringType, string memberName)
-        {
-            if (!SupportedComparisons.ContainsKey(be.NodeType))
-                throw new Exception($"Unsupported comparison type {be.NodeType}");
+        BinaryExpression be = (BinaryExpression) exp;
 
-            if (be.Left.NodeType == ExpressionType.MemberAccess)
-            {
-                MemberExpression me = (MemberExpression)be.Left;
+        if (IsSpecificMemberExpression(be.Left, declaringType, memberName) &&
+            IsSpecificMemberExpression(be.Right, declaringType, memberName))
+            throw new Exception("Cannot have 'member' on both sides of an expression.");
 
-                if (me.Member.Name == memberName)
-                {
-                    return GetValueFromExpression(be.Right);
-                }
-            }
-            else if (be.Right.NodeType == ExpressionType.MemberAccess)
-            {
-                MemberExpression me = (MemberExpression)be.Right;
-
-                if (me.Member.Name == memberName)
-                {
-                    return GetValueFromExpression(be.Left);
-                }
-            }
-
-            // We should have returned by now. 
-            throw new Exception("There is a bug in this program. (#2)");
-        }
-
-        internal static string GetValueFromExpression(Expression expression)
-        {
-            if (expression.NodeType == ExpressionType.Constant)
-            {
-                var ce = (ConstantExpression)expression;
-                return (ce.Value == null)
-                    ? "" : ce.Value.ToString();
-            }
-            else
-                throw new InvalidQueryException(
-                    String.Format("The expression type {0} is not supported to obtain a value.", expression.NodeType));
-        }
+        return IsSpecificMemberExpression(be.Left, declaringType, memberName) ||
+               IsSpecificMemberExpression(be.Right, declaringType, memberName);
     }
 
-    public class InvalidQueryException : Exception
+    internal static bool IsSpecificMemberExpression(Expression? exp, Type? declaringType, string memberName)
     {
-        private readonly string message;
-
-        public InvalidQueryException(string message)
+        if (exp is MemberExpression mexp)
         {
-            this.message = message + " ";
+            while (declaringType != null)
+            {
+                if (mexp.Member.DeclaringType == declaringType
+                    && mexp.Member.Name == memberName)
+                    return true;
+                declaringType = declaringType.BaseType;
+            }
         }
 
-        public override string Message => "The client query is invalid: " + message;
+        return false;
+    }
+
+    internal static string GetValueFromExpression(BinaryExpression be, Type memberDeclaringType, string memberName)
+    {
+        if (!SupportedComparisons.ContainsKey(be.NodeType))
+            throw new Exception($"Unsupported comparison type {be.NodeType}");
+
+        if (be.Left.NodeType == ExpressionType.MemberAccess)
+        {
+            var me = (MemberExpression)be.Left;
+            if (me.Member.Name == memberName)
+            {
+                return GetValueFromExpression(be.Right);
+            }
+        }
+        else if (be.Right.NodeType == ExpressionType.MemberAccess)
+        {
+            var me = (MemberExpression)be.Right;
+            if (me.Member.Name == memberName)
+            {
+                return GetValueFromExpression(be.Left);
+            }
+        }
+
+        // We should have returned by now. 
+        throw new Exception("There is a bug in this program. (#2)");
+    }
+
+    internal static string GetValueFromExpression(Expression expression)
+    {
+        if (expression.NodeType == ExpressionType.Constant)
+        {
+            var ce = (ConstantExpression)expression;
+            return ce.Value?.ToString() ?? "";
+        }
+        throw new InvalidQueryException($"The expression type {expression.NodeType} is not supported to obtain a value.");
     }
 }

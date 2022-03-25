@@ -1,7 +1,12 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Julmar.AzDOUtilities", "Julmar.AzDOUtilities.csproj", "{CDFF8FD5-105F-49C8-971A-3CE6E73DBA7D}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Julmar.AzDOUtilities", "Julmar.AzDOUtilities.csproj", "{CDFF8FD5-105F-49C8-971A-3CE6E73DBA7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzDOTests", "..\tests\AzDOTests\AzDOTests.csproj", "{8C291BCB-8E13-4F0B-8B4F-FF4BAABD42AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "..\tests\SampleApp\SampleApp.csproj", "{EA27FDEA-BD12-4C76-9697-1D7311D9B98D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,5 +18,19 @@ Global
 		{CDFF8FD5-105F-49C8-971A-3CE6E73DBA7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDFF8FD5-105F-49C8-971A-3CE6E73DBA7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDFF8FD5-105F-49C8-971A-3CE6E73DBA7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C291BCB-8E13-4F0B-8B4F-FF4BAABD42AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C291BCB-8E13-4F0B-8B4F-FF4BAABD42AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C291BCB-8E13-4F0B-8B4F-FF4BAABD42AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C291BCB-8E13-4F0B-8B4F-FF4BAABD42AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA27FDEA-BD12-4C76-9697-1D7311D9B98D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA27FDEA-BD12-4C76-9697-1D7311D9B98D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA27FDEA-BD12-4C76-9697-1D7311D9B98D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA27FDEA-BD12-4C76-9697-1D7311D9B98D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D73DBC2A-7326-465C-8B65-29ADBE2BEBB6}
 	EndGlobalSection
 EndGlobal

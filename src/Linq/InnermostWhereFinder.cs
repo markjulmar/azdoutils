@@ -1,46 +1,27 @@
 ﻿using System.Linq.Expressions;
 
-namespace Julmar.AzDOUtilities.Linq
+namespace Julmar.AzDOUtilities.Linq;
+
+/// <summary>
+/// Where() handler
+/// </summary>
+internal class InnermostWhereFinder : ExpressionVisitor
 {
-    internal class TakeFinder : ExpressionVisitor
+    private MethodCallExpression? innermostWhereExpression;
+
+    public MethodCallExpression? GetInnermostWhere(Expression expression)
     {
-        private MethodCallExpression takeExpression;
-
-        public MethodCallExpression FindTake(Expression expression)
-        {
-            Visit(expression);
-            return takeExpression;
-        }
-
-        protected override Expression VisitMethodCall(MethodCallExpression expression)
-        {
-            if (expression.Method.Name == "Take")
-                takeExpression = expression;
-
-            Visit(expression.Arguments[0]);
-
-            return expression;
-        }
+        Visit(expression);
+        return innermostWhereExpression;
     }
 
-    internal class InnermostWhereFinder : ExpressionVisitor
+    protected override Expression VisitMethodCall(MethodCallExpression expression)
     {
-        private MethodCallExpression innermostWhereExpression;
+        if (expression.Method.Name == "Where")
+            innermostWhereExpression = expression;
 
-        public MethodCallExpression GetInnermostWhere(Expression expression)
-        {
-            Visit(expression);
-            return innermostWhereExpression;
-        }
+        Visit(expression.Arguments[0]);
 
-        protected override Expression VisitMethodCall(MethodCallExpression expression)
-        {
-            if (expression.Method.Name == "Where")
-                innermostWhereExpression = expression;
-
-            Visit(expression.Arguments[0]);
-
-            return expression;
-        }
+        return expression;
     }
 }
