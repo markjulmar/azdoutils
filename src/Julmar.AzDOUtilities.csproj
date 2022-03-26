@@ -4,7 +4,7 @@
     <TargetFramework>net60</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Julmar.AzDOUtilities</PackageId>
-    <Version>1.8.3-preview</Version>
+    <Version>1.8.4-preview</Version>
     <Authors>Mark Smith</Authors>
     <CompanyName>julmar.com</CompanyName>
     <Description>Client library to provide type-safe wrappers to work with the Azure DevOps REST API.</Description>

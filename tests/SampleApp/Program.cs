@@ -17,10 +17,36 @@ var service = AzureDevOpsFactory.Create(url, token);
 var queryProvider = AzureDevOpsFactory.CreateQueryable<EpicWorkItem>(service, project);
 
 // Setup tracing
-service.TraceLog = Console.WriteLine;
-service.TraceLevel = LogLevel.Query | LogLevel.EnterExit | LogLevel.RawApis;
+service.TraceLog = s =>
+{
+    Console.ForegroundColor = ConsoleColor.Green;
+    try
+    {
+        Console.WriteLine(s);
+    }
+    finally
+    {
+        Console.ResetColor();
+    }
+};
 
-TryLinq(queryProvider);
+service.TraceLevel = LogLevel.EnterExit | LogLevel.LinqExpression | LogLevel.LinqQuery | LogLevel.Query |
+                     LogLevel.RawApis | LogLevel.RelatedApis;
+
+await TryQuery(service);
+
+async Task TryQuery(IAzureDevOpsService service)
+{
+    var results = await service.QueryAsync(
+        $@"SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '{project}'" +
+        @" AND [System.WorkItemType] = 'Module' AND ([System.State] = 'Closed'" +
+        @" AND [Microsoft.VSTS.Common.ClosedDate] >= '12/26/2021 12:00:00 AM' )");
+
+    foreach (var item in results)
+    {
+        Console.WriteLine(item);
+    }
+}
 
 void TryLinq(IOrderedQueryable<WorkItem> queryProvider)
 {

@@ -13,6 +13,22 @@ namespace Julmar.AzDOUtilities;
 /// </summary>
 sealed partial class AzDOService : IAzureDevOpsService
 {
+    private int maxBatchSize = 100;
+
+    /// <summary>
+    /// Max batch size
+    /// </summary>
+    public int MaxBatchSize
+    {
+        get => maxBatchSize;
+        set
+        {
+            if (value is <= 0 or > 200)
+                throw new ArgumentOutOfRangeException(nameof(value));
+            maxBatchSize = value;
+        }
+    }
+
     /// <summary>
     /// Client for the WIT tracking
     /// </summary>

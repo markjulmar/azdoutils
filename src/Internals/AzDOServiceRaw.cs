@@ -97,7 +97,7 @@ partial class AzDOService
 
         errorPolicy ??= ErrorPolicy;
 
-        const int nSize = 150;
+        int nSize = MaxBatchSize; // limit the size
         var workItems = new List<Wit>();
 
         // Chunk the retrieval.

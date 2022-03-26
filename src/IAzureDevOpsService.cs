@@ -11,6 +11,13 @@ namespace Julmar.AzDOUtilities;
 public interface IAzureDevOpsService
 {
     /// <summary>
+    /// Max batch size to retrieve at one time, defaults to 100.
+    /// If you start getting NotFound errors when retrieving batches, it likely is
+    /// because the size has been exceeded. Lowering this value will make the call succesful.
+    /// </summary>
+    public int MaxBatchSize { get; set; }
+
+    /// <summary>
     /// Connection to the underlying VSTS services
     /// </summary>
     public VssConnection Connection { get; }
