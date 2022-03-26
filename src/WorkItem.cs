@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
@@ -12,10 +13,19 @@ namespace Julmar.AzDOUtilities;
 /// Base WorkItem type that wraps a WorkItem in Azure DevOps to support
 /// change tracking and property mapping.
 /// </summary>
-public class WorkItem
+[DebuggerDisplay("[{Id}] {WorkItemType} - {Title}")]
+public class WorkItem : IEquatable<WorkItem>
 {
     private WitModel? witModel;
     private StringBuilder? addComments;
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public WorkItem()
+    {
+        WorkItemType = GetWorkItemType(GetType());
+    }
 
     /// <summary>
     /// Fields we loaded from the WIT
@@ -33,6 +43,12 @@ public class WorkItem
     public int? Revision => witModel?.Rev;
 
     /// <summary>
+    /// Date this work item was revised.
+    /// </summary>
+    [AzDOField(Field.RevisedDate, IsReadOnly = true)]
+    public DateTime? RevisedDate { get; protected set; }
+
+    /// <summary>
     /// Relations of the work item.
     /// </summary>
     public IList<WorkItemRelation> Relations => witModel?.Relations ?? new List<WorkItemRelation>();
@@ -48,10 +64,58 @@ public class WorkItem
     public bool IsNew => witModel == null || Id == null;
 
     /// <summary>
+    /// Associated parent id
+    /// </summary>
+    [AzDOField(Field.Parent)]
+    public int? ParentId { get; protected set; }
+
+    /// <summary>
+    /// Activated date for this work item
+    /// </summary>
+    [AzDOField(Field.ActivatedDate, IsReadOnly = true)]
+    public DateTime? ActivatedDate { get; protected set; }
+
+    /// <summary>
+    /// Person who activated this work item
+    /// </summary>
+    [AzDOField(Field.ActivatedBy, Converter = typeof(IdentityRefConverter))]
+    public string? ActivatedBy { get; set; }
+
+    /// <summary>
+    /// Authorization date for this work item
+    /// </summary>
+    [AzDOField(Field.AuthorizedDate, IsReadOnly = true)]
+    public DateTime? AuthorizedDate { get; protected set; }
+
+    /// <summary>
+    /// Person who authorized this work item
+    /// </summary>
+    [AzDOField(Field.AuthorizedAs, Converter = typeof(IdentityRefConverter))]
+    public string? AuthorizedAs { get; set; }
+
+    /// <summary>
     /// Changed date for this work item
     /// </summary>
     [AzDOField(Field.ChangedDate, IsReadOnly = true)]
     public DateTime? ChangedDate { get; protected set; }
+
+    /// <summary>
+    /// Board column for this work item.
+    /// </summary>
+    [AzDOField(Field.BoardColumn)]
+    public string? BoardColumn { get; set; }
+
+    /// <summary>
+    /// True if this is done.
+    /// </summary>
+    [AzDOField(Field.BoardColumnDone)]
+    public bool? BoardColumnDone { get; set; }
+
+    /// <summary>
+    /// Board lane for this work item.
+    /// </summary>
+    [AzDOField(Field.BoardLane)]
+    public string? BoardLane { get; set; }
 
     /// <summary>
     /// State changed date
@@ -90,10 +154,70 @@ public class WorkItem
     public DateTime? ClosedDate { get; protected set; }
 
     /// <summary>
+    /// Number of comments associated to this work item.
+    /// </summary>
+    [AzDOField(Field.CommentCount)]
+    public int? CommentCount { get; protected set; }
+
+    /// <summary>
+    /// Number of related links tied to this work item.
+    /// </summary>
+    [AzDOField(Field.RelatedLinkCount)]
+    public int? RelatedLinkCount { get; protected set; }
+
+    /// <summary>
+    /// Number of external links tied to this work item.
+    /// </summary>
+    [AzDOField(Field.ExternalLinkCount)]
+    public int? ExternalLinkCount { get; protected set; }
+
+    /// <summary>
+    /// Number of hyperlinks tied to this work item.
+    /// </summary>
+    [AzDOField(Field.HyperLinkCount)]
+    public int? HyperLinkCount { get; protected set; }
+
+    /// <summary>
+    /// Number of files attached to this work item.
+    /// </summary>
+    [AzDOField(Field.AttachedFileCount)]
+    public int? AttachedFileCount { get; protected set; }
+
+    /// <summary>
+    /// Number of remote links tied to this work item.
+    /// </summary>
+    [AzDOField(Field.RemoteLinkCount)]
+    public int? RemoteLinkCount { get; protected set; }
+
+    /// <summary>
+    /// Node name
+    /// </summary>
+    [AzDOField(Field.NodeName)]
+    public string? NodeName { get; protected set; }
+
+    /// <summary>
+    /// Resolved date for this work item
+    /// </summary>
+    [AzDOField(Field.ResolvedDate, IsReadOnly = true)]
+    public DateTime? ResolvedDate { get; protected set; }
+
+    /// <summary>
+    /// Person who resolved this Work Item
+    /// </summary>
+    [AzDOField(Field.ResolvedBy, Converter = typeof(IdentityRefConverter))]
+    public string? ResolvedBy { get; set; }
+
+    /// <summary>
+    /// Resolved reason
+    /// </summary>
+    [AzDOField(Field.ResolvedReason)]
+    public string? ResolvedReason { get; set; }
+
+    /// <summary>
     /// Work item type
     /// </summary>
     [AzDOField(Field.WorkItemType)]
-    public string WorkItemType { get; protected set; } = string.Empty;
+    public string WorkItemType { get; protected set; }
 
     /// <summary>
     /// Project this work item is tied to
@@ -180,6 +304,12 @@ public class WorkItem
     public string? AcceptedBy { get; set; }
 
     /// <summary>
+    /// Watermark.
+    /// </summary>
+    [AzDOField(Field.Watermark)]
+    public int? Watermark { get; set; }
+
+    /// <summary>
     /// Optional tags for this work item
     /// </summary>
     [AzDOField(Field.Tags, Converter = typeof(SemicolonSeparatedConverter))]
@@ -213,13 +343,10 @@ public class WorkItem
     /// <returns>True if the field value is set, false if not.</returns>
     public bool TryGetFieldValue<T>(string fieldName, out T? value)
     {
-        if (witModel != null)
+        if (witModel?.Fields.TryGetValue(fieldName, out var field) == true) 
         {
-            if (witModel.Fields.TryGetValue(fieldName, out var field) == true)
-            {
-                value = (T?) field;
-                return true;
-            }
+            value = (T?) field;
+            return true;
         }
 
         value = default;
@@ -426,11 +553,13 @@ public class WorkItem
                     // Assign the value to the local property.
                     if (initialValue == null || prop.PropertyType == initialValue.GetType())
                     {
-                        prop.SetValue(this, initialValue);
+                        // Don't replace WorkItemType.
+                        if (prop.Name != nameof(WorkItemType) || initialValue != null)
+                            prop.SetValue(this, initialValue);
                     }
                     else if (prop.PropertyType == typeof(string))
                     {
-                        prop.SetValue(this, initialValue?.ToString());
+                        prop.SetValue(this, initialValue.ToString());
                     }
                     else if (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?))
                     {
@@ -485,6 +614,67 @@ public class WorkItem
     /// <returns>String</returns>
     public override string ToString()
     {
-        return $"{WorkItemType} {Id}: ({State}) \"{Title}\"";
+        string text = WorkItemType;
+        text += Id != null ? $" {Id} ({State})" : " new";
+        text += $" \"{Title}\"";
+        return text;
+    }
+
+    /// <summary>
+    /// Equality check
+    /// </summary>
+    /// <param name="other">Other object</param>
+    /// <returns>True if they are equal</returns>
+    public bool Equals(WorkItem? other)
+    {
+        return other is not null 
+               && (ReferenceEquals(this, other) || 
+                   (this.witModel != null && this.witModel == other.witModel)
+                   || (!string.IsNullOrEmpty(this.WorkItemType) && this.Id != null)
+                       && other.WorkItemType == this.WorkItemType 
+                       && other.Id == this.Id);
+    }
+
+    /// <summary>
+    /// Overridden object equals check
+    /// </summary>
+    /// <param name="obj">Other object</param>
+    /// <returns>True if they are equal</returns>
+    public override bool Equals(object? obj) 
+        => ReferenceEquals(this, obj) || obj is WorkItem other && Equals(other);
+
+    /// <summary>
+    /// Hashcode generator for WorkItem.
+    /// </summary>
+    /// <returns>Unique hashcode</returns>
+    public override int GetHashCode() 
+        => HashCode.Combine(WorkItemType, Id??0);
+
+    /// <summary>
+    /// Equality operator
+    /// </summary>
+    /// <param name="left">Left side</param>
+    /// <param name="right">Right side</param>
+    /// <returns>True/False based on equality</returns>
+    public static bool operator ==(WorkItem? left, WorkItem? right) 
+        => Equals(left, right);
+
+    /// <summary>
+    /// Not equal operator
+    /// </summary>
+    /// <param name="left">Left side</param>
+    /// <param name="right">Right side</param>
+    /// <returns>True/False based on equality</returns>
+    public static bool operator !=(WorkItem? left, WorkItem? right) 
+        => !Equals(left, right);
+
+    /// <summary>
+    /// Return the work item type if known.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    protected static string GetWorkItemType(Type type)
+    {
+        return type.GetCustomAttribute<AzDOWorkItemAttribute>()?.WorkItemType ?? string.Empty;
     }
 }

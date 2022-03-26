@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Julmar.AzDOUtilities;
+using Julmar.AzDOUtilities.Agile;
 using Xunit;
 
 namespace AzDOTests
@@ -83,5 +84,28 @@ namespace AzDOTests
             Assert.Equal(expected, output);
         }
 
+
+        [Fact]
+        public void CanConvertEnumToString()
+        {
+            var converter = new StringEnumConverter();
+            var expected = BugSeverity.High;
+
+            Assert.Equal(expected, converter.Convert("2 - High", typeof(BugSeverity)));
+            Assert.Equal(expected, converter.Convert("High", typeof(BugSeverity)));
+            Assert.Null(converter.Convert("", typeof(BugSeverity)));
+            Assert.Null(converter.Convert(null, typeof(BugSeverity)));
+            Assert.Null(converter.Convert("Test", typeof(BugSeverity)));
+        }
+
+        [Fact]
+        public void CanConvertStringBackToEnum()
+        {
+            var converter = new StringEnumConverter();
+            var expected = "2 - High";
+
+            Assert.Equal(expected, converter.ConvertBack(BugSeverity.High));
+            Assert.Null(converter.ConvertBack(null));
+        }
     }
 }

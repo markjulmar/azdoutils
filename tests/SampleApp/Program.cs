@@ -1,4 +1,6 @@
-﻿using Julmar.AzDOUtilities;
+﻿using System.Collections;
+using Julmar.AzDOUtilities;
+using Julmar.AzDOUtilities.Agile;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using WorkItem = Julmar.AzDOUtilities.WorkItem;
 
@@ -7,12 +9,12 @@ string tokenFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFol
 string token = File.ReadAllText(tokenFile);
 
 // TODO: change based on test.
-string url = "https://julmar.visualstudio.com/";
-string project = "Test";
+string url = "https://fuzenutrition.visualstudio.com/";
+string project = "Fuze";
 
 // Get the service
 var service = AzureDevOpsFactory.Create(url, token);
-var queryProvider = AzureDevOpsFactory.CreateQueryable<WorkItem>(service, project);
+var queryProvider = AzureDevOpsFactory.CreateQueryable<EpicWorkItem>(service, project);
 
 // Setup tracing
 service.TraceLog = Console.WriteLine;
@@ -23,16 +25,14 @@ TryLinq(queryProvider);
 void TryLinq(IOrderedQueryable<WorkItem> queryProvider)
 {
     var items = queryProvider
-                .Where(e => 
-                            e.State == "Concept" 
-                            && e.CreatedDate >= DateTime.Now.AddDays(-30)
-                            && e.WorkItemType == "Epic")
+                .Where(e => e.State == WorkItemStates.New
+                        && e.CreatedDate >= DateTime.Now.AddDays(-30))
                 .Take(5)
                 .ToList();
 
     foreach (var item in items)
     {
-        DumpWorkItem(item);
+        DumpObject(item);
     }
 }
 
@@ -69,13 +69,59 @@ async Task DumpWorkItems(IAzureDevOpsService service, IEnumerable<WorkItemRefere
     {
         var workItem = await service.GetAsync(item.Id);
         if (workItem != null)
-            DumpWorkItem(workItem);
+            DumpObject(workItem);
     }
 }
 
-void DumpWorkItem(WorkItem workItem)
+void DumpObject(object? value, int level = 1)
 {
-    Console.WriteLine($"{workItem.Id} - \"{workItem.Title}\"");
+    if (value == null)
+    {
+        Console.WriteLine("null");
+        return;
+    }
+
+    Console.WriteLine(value.ToString());
+
+    string prefix = new string(' ', level * 3);
+    foreach (var prop in value.GetType().GetProperties())
+    {
+        object? child = prop.GetValue(value);
+        if (child == null) continue;
+
+        if (prop.PropertyType != typeof(string) && prop.PropertyType.GetInterfaces()
+            .Any(t => t.IsGenericType
+                      && t.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+        {
+            Console.Write(prefix);
+            Console.Write($"{prop.Name} = [ ");
+            if (child is IEnumerable enumerable)
+            {
+                int count = 0;
+                foreach (object? ev in enumerable)
+                {
+                    if (count>0) Console.Write(',');
+                    Console.Write(ev.ToString());
+                    count++;
+                }
+            }
+            else Console.Write(child);
+            Console.WriteLine(" ]");
+        }
+        else if (prop.PropertyType.IsClass && prop.PropertyType != typeof(string))
+        {
+            Console.Write(prefix);
+            Console.WriteLine($"{prop.Name} =");
+            DumpObject(child, level+1);
+        }
+        else
+        {
+            Console.Write(prefix);
+            Console.WriteLine($"{prop.Name} = {child}");
+        }
+    }
+
+    Console.WriteLine();
 }
 
 async Task DumpAreaPaths(IAzureDevOpsService service)

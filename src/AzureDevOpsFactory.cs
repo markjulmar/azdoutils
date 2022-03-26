@@ -1,6 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Julmar.AzDOUtilities;
 
-[assembly: InternalsVisibleTo("AzDOTests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("AzDOTests")]
+
+[assembly:AzDORegister(
+    typeof(Julmar.AzDOUtilities.Agile.BugWorkItem), 
+    typeof(Julmar.AzDOUtilities.Agile.EpicWorkItem), 
+    typeof(Julmar.AzDOUtilities.Agile.FeatureWorkItem),
+    typeof(Julmar.AzDOUtilities.Agile.TaskWorkItem))]
 
 namespace Julmar.AzDOUtilities;
 
