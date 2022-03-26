@@ -6,7 +6,8 @@
     typeof(Julmar.AzDOUtilities.Agile.BugWorkItem), 
     typeof(Julmar.AzDOUtilities.Agile.EpicWorkItem), 
     typeof(Julmar.AzDOUtilities.Agile.FeatureWorkItem),
-    typeof(Julmar.AzDOUtilities.Agile.TaskWorkItem))]
+    typeof(Julmar.AzDOUtilities.Agile.TaskWorkItem),
+    typeof(Julmar.AzDOUtilities.Agile.UserStory))]
 
 namespace Julmar.AzDOUtilities;
 

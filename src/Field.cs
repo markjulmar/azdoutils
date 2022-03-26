@@ -7,6 +7,7 @@
 internal static class Field
 {
     public const string AcceptedBy = "Microsoft.VSTS.CodeReview.AcceptedBy";
+    public const string AcceptanceCriteria = "Microsoft.VSTS.Common.AcceptanceCriteria";
     public const string Activity = "Microsoft.VSTS.Common.Activity";
     public const string ActivatedBy = "Microsoft.VSTS.Common.ActivatedBy";
     public const string ActivatedDate = "Microsoft.VSTS.Common.ActivatedDate";
