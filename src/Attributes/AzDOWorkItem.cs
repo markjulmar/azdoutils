@@ -3,7 +3,7 @@
 /// <summary>
 /// Attribute applied to .NET types to tie it to a specific custom Azure DevOps work item type
 /// </summary>
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, Inherited = true)]
 public sealed class AzDOWorkItemAttribute : Attribute
 {
     /// <summary>

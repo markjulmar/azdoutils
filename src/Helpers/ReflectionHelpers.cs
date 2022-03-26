@@ -86,11 +86,27 @@ internal static class ReflectionHelpers
     /// <returns>Names and types</returns>
     private static IReadOnlyDictionary<string,Type> CollectRegisteredTypes()
     {
-        return AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(asm => asm.GetCustomAttributes<AzDORegisterAttribute>())
+        // Get all registered types from this assembly first. These are the core
+        // types we'll use. Other assemblies can replace those types.
+        var thisAssembly = Assembly.GetExecutingAssembly();
+        var baseDictionary = thisAssembly
+            .GetCustomAttributes<AzDORegisterAttribute>()
             .SelectMany(attr => attr.Types)
             .Where(t => t.GetCustomAttribute<AzDOWorkItemAttribute>() != null)
             .ToDictionary(type => type.GetCustomAttribute<AzDOWorkItemAttribute>()!.WorkItemType, type => type);
+
+        // Layer in additional assemblies.
+        foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
+                     .Where(asm => asm != thisAssembly)
+                     .SelectMany(asm => asm.GetCustomAttributes<AzDORegisterAttribute>())
+                     .SelectMany(attr => attr.Types)
+                     .Where(t => t.GetCustomAttribute<AzDOWorkItemAttribute>() != null))
+        {
+            var key = type.GetCustomAttribute<AzDOWorkItemAttribute>()!.WorkItemType;
+            baseDictionary[key] = type;
+        }
+
+        return baseDictionary;
     }
 
     /// <summary>
