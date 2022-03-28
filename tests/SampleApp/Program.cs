@@ -8,11 +8,8 @@ string tokenFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFol
 string token = File.ReadAllText(tokenFile);
 
 // TODO: change based on test.
-//string url = "https://fuzenutrition.visualstudio.com/";
-//string project = "Fuze";
-
-string url = "https://ceapex.visualstudio.com";
-string project = "Microsoft Learn";
+string url = "https://fuzenutrition.visualstudio.com/";
+string project = "Fuze";
 
 // Get the service
 var service = AzureDevOpsFactory.Create(url, token);
@@ -42,7 +39,7 @@ async Task TryQuery(IAzureDevOpsService service)
 {
     var results = await service.QueryAsync(
         $@"SELECT [System.Id],[System.Title],[System.State] FROM WorkItems WHERE [System.TeamProject] = '{project}'" +
-        @" AND [System.WorkItemType] = 'Module' AND ([System.State] = 'Closed'" +
+        @" AND [System.WorkItemType] = 'Epic' AND ([System.State] = 'Closed'" +
         @" AND [Microsoft.VSTS.Common.ClosedDate] >= '12/26/2021 12:00:00 AM' )");
 
     foreach (var item in results)
