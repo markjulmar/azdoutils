@@ -14,6 +14,7 @@ dotnet add package Julmar.AzDOUtilities --version 1.6.1-prerelease
 
 | Version | Changes  |
 |---------|----------|
+| **2.0.0.pre** | Move to .NET 6, updated for nullable reference types. Added standard agile work items for Epic, Feature, UserStory, Bug, and Task. |
 | **1.6.1-pre** | Added `ValidFields` to `WorkItem` type to retrieve field names. Added `Connection` to provide underlying access to the `VssConnection` to retrieve other types. |
 | **1.6-pre** | Added new `QueryLinkedRelationshipsAsync` method to retrieve work item links. |
 | **1.5.2-pre** | Added new `GetAsync` to retrieve a set of Ids. |
