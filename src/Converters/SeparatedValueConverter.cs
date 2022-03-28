@@ -50,10 +50,13 @@ public class SeparatedValueConverter : IFieldConverter, IFieldComparer
     /// <param name="value">Value to convert</param>
     /// <param name="toType">Type to convert to</param>
     /// <returns>New object of type with value</returns>
-    public virtual object Convert(object? value, Type toType)
+    public virtual object? Convert(object? value, Type toType)
     {
         if (toType != typeof(string[]) && toType != typeof(List<string>))
             throw new ArgumentException($"Cannot convert {value?.GetType().Name ?? "<unknown>"} to {toType.Name}", nameof(value));
+
+        if (value == null) 
+            return null;
 
         string text = value?.ToString()??"";
         string[] values = text.Split(separator.Trim(), StringSplitOptions.RemoveEmptyEntries);
@@ -67,12 +70,12 @@ public class SeparatedValueConverter : IFieldConverter, IFieldComparer
     /// </summary>
     /// <param name="value">Value to convert</param>
     /// <returns>Field value</returns>
-    public virtual object ConvertBack(object? value)
+    public virtual object? ConvertBack(object? value)
     {
         switch (value)
         {
             case null:
-                return string.Empty;
+                return null;
             case IEnumerable<string> enumerable:
             {
                 var result = string.Join(separator, enumerable);

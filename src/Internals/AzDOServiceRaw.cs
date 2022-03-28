@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.TeamFoundation.Core.WebApi;
@@ -97,23 +98,40 @@ partial class AzDOService
 
         errorPolicy ??= ErrorPolicy;
 
-        int nSize = MaxBatchSize; // limit the size
+        int nSize = 200; // Max size
         var workItems = new List<Wit>();
 
         // Chunk the retrieval.
         for (int i = 0; i < ids.Count; i += nSize)
         {
-            var range = ids.GetRange(i, Math.Min(nSize, ids.Count - i));
-
-            using var mc = log?.Enter(LogLevel.RawApis, new object?[] { range, fields, asOf, expand, errorPolicy, null, cancellationToken }, "GetWorkItemsAsync");
+            List<Wit>? results = null;
+            try
             {
-                var results = await WorkItemClient
-                    .GetWorkItemsAsync(range, fields, asOf, expand, errorPolicy, userState: null, cancellationToken)
-                    .ConfigureAwait(false);
-                workItems.AddRange(results);
+                var range = ids.GetRange(i, Math.Min(nSize, ids.Count - i));
+                using var mc = log?.Enter(LogLevel.RawApis, new object?[] { range, fields, asOf, expand, errorPolicy, null, cancellationToken }, "GetWorkItemsAsync");
+                {
+                    results = await WorkItemClient
+                        .GetWorkItemsAsync(range, fields, asOf, expand, errorPolicy, userState: null, cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
+            catch (VssServiceResponseException ex)
+            {
+                if (nSize == 1 || ex.HttpStatusCode != HttpStatusCode.NotFound) throw;
+
+                log?.WriteLine(LogLevel.RawApis, $"{ex.GetType().Name}:{ex.HttpStatusCode} with {nSize} count. Retry.");
+
+                // Try again with a smaller range.
+                results = null;
+                nSize = Math.Max(1, nSize/2);
+                i -= nSize;
+            }
+
+            if (results != null)
+                workItems.AddRange(results);
         }
 
+        Debug.Assert(workItems.Count == ids.Count);
         return workItems;
     }
 
@@ -137,7 +155,7 @@ partial class AzDOService
         if (workItem.Relations != null)
         {
             list.AddRange(workItem.Relations
-                .Where(r => relationshipType == null || r.Rel == relationshipType)
+                .Where(r => string.IsNullOrEmpty(relationshipType) || r.Rel == relationshipType)
                 .Select(r => new RelationLinks {
                     Title = r.Title,
                     Attributes = r.Attributes,
@@ -168,10 +186,10 @@ partial class AzDOService
         if (query == null) throw new ArgumentNullException(nameof(query));
         log?.WriteLine(LogLevel.Query, query);
 
-        var wiql = new Wiql { Query = query };
+        var wiql = new Wiql { Query = RemoveFieldsFromQuery(query) };
         errorPolicy ??= ErrorPolicy;
 
-        using var mc = log?.Enter(LogLevel.RawApis, new object?[] { wiql, timePrecision, top, null, cancellationToken }, "QueryByWiqlAsync");
+        using var mc = log?.Enter(LogLevel.RawApis, new object?[] { wiql.Query, timePrecision, top, null, cancellationToken }, "QueryByWiqlAsync");
 
         // Return a list of URLs + Ids for matching workItems.
         WorkItemQueryResult queryResult = await WorkItemClient
@@ -187,6 +205,18 @@ partial class AzDOService
         }
 
         return Enumerable.Empty<Wit>();
+    }
+
+    /// <summary>
+    /// Turn "SELECT [x],[y],[z],* FROM ..." into "SELECT [id] FROM". WIQL ignores the specific fields and only returns
+    /// the ID each time.
+    /// </summary>
+    /// <param name="query"></param>
+    /// <returns></returns>
+    private static string RemoveFieldsFromQuery(string query)
+    {
+        int pos = query.IndexOf("FROM", StringComparison.OrdinalIgnoreCase);
+        return pos == -1 ? query : $"SELECT [{WorkItemField.Id}] " + query[pos..];
     }
 
     /// <summary>

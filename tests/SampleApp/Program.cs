@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using Julmar.AzDOUtilities;
-using Julmar.AzDOUtilities.Agile;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using WorkItem = Julmar.AzDOUtilities.WorkItem;
 
@@ -9,12 +8,15 @@ string tokenFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFol
 string token = File.ReadAllText(tokenFile);
 
 // TODO: change based on test.
-string url = "https://fuzenutrition.visualstudio.com/";
-string project = "Fuze";
+//string url = "https://fuzenutrition.visualstudio.com/";
+//string project = "Fuze";
+
+string url = "https://ceapex.visualstudio.com";
+string project = "Microsoft Learn";
 
 // Get the service
 var service = AzureDevOpsFactory.Create(url, token);
-var queryProvider = AzureDevOpsFactory.CreateQueryable<EpicWorkItem>(service, project);
+var queryProvider = AzureDevOpsFactory.CreateQueryable<WorkItem>(service, project);
 
 // Setup tracing
 service.TraceLog = s =>
@@ -34,17 +36,25 @@ service.TraceLevel = LogLevel.EnterExit | LogLevel.LinqExpression | LogLevel.Lin
                      LogLevel.RawApis | LogLevel.RelatedApis;
 
 await TryQuery(service);
+//TryLinq(queryProvider);
 
 async Task TryQuery(IAzureDevOpsService service)
 {
     var results = await service.QueryAsync(
-        $@"SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '{project}'" +
+        $@"SELECT [System.Id],[System.Title],[System.State] FROM WorkItems WHERE [System.TeamProject] = '{project}'" +
         @" AND [System.WorkItemType] = 'Module' AND ([System.State] = 'Closed'" +
         @" AND [Microsoft.VSTS.Common.ClosedDate] >= '12/26/2021 12:00:00 AM' )");
 
     foreach (var item in results)
     {
         Console.WriteLine(item);
+        if (item.HasChanges)
+        {
+            foreach (var change in item.GatherChangeList())
+            {
+                Console.WriteLine("\t" + change);
+            }
+        }
     }
 }
 

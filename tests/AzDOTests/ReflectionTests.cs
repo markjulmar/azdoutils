@@ -1,5 +1,6 @@
 ﻿using System;
 using Julmar.AzDOUtilities;
+using Julmar.AzDOUtilities.Agile;
 using Xunit;
 
 namespace AzDOTests
@@ -11,8 +12,7 @@ namespace AzDOTests
         {
             Assert.Equal("System.LinkTypes.Hierarchy-Forward", 
                 AzDOService.GetRelationshipLinkText(Relationship.Child));
-            Assert.Throws<ArgumentOutOfRangeException>(() 
-                => AzDOService.GetRelationshipLinkText(Relationship.Other));
+            Assert.Empty(AzDOService.GetRelationshipLinkText(Relationship.Other));
 
             Assert.Equal(Relationship.AffectedBy, 
                 AzDOService.GetRelationshipFromLinkText("Microsoft.VSTS.Common.Affects-Reverse"));
@@ -34,5 +34,11 @@ namespace AzDOTests
             Assert.Null(AzDOService.ParseIdFromRelationship("1/relationship/"));
         }
 
+        [Fact]
+        public void CanGetFieldNameFromProperty()
+        {
+            Assert.Equal("Epic", WorkItemField<EpicWorkItem>.GetWorkItemTypeName());
+            Assert.Equal(WorkItemField.Risk, WorkItemField<EpicWorkItem>.GetWorkItemFieldName(e => e.Risk));
+        }
     }
 }

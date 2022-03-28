@@ -1,10 +1,14 @@
-﻿namespace Julmar.AzDOUtilities;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 
+namespace Julmar.AzDOUtilities;
+
+#pragma warning disable CS1591
 /// <summary>
-/// Names of standard VSTS fields.
+/// Names of standard Azure DevOps fields.
 /// See https://docs.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field?view=azure-devops
 /// </summary>
-internal static class Field
+public static class WorkItemField
 {
     public const string AcceptedBy = "Microsoft.VSTS.CodeReview.AcceptedBy";
     public const string AcceptanceCriteria = "Microsoft.VSTS.Common.AcceptanceCriteria";
@@ -18,7 +22,7 @@ internal static class Field
     public const string AuthorizedAs = "System.AuthorizedAs";
     public const string AuthorizedDate = "System.AuthorizedDate";
     public const string BoardColumn = "System.BoardColumn";
-    public const string BoardColumnDone= "System.BoardColumnDone";
+    public const string BoardColumnDone = "System.BoardColumnDone";
     public const string BoardLane = "System.BoardLane";
     public const string BusinessValue = "Microsoft.VSTS.Common.BusinessValue";
     public const string ChangedBy = "System.ChangedBy";
@@ -70,4 +74,35 @@ internal static class Field
     public const string ValueArea = "Microsoft.VSTS.Common.ValueArea";
     public const string Watermark = "System.Watermark";
     public const string WorkItemType = "System.WorkItemType";
+}
+#pragma warning restore CS1591
+
+/// <summary>
+/// Work Item field typename helper
+/// </summary>
+/// <typeparam name="T">Work Item type</typeparam>
+public static class WorkItemField<T> where T : WorkItem
+{
+    /// <summary>
+    /// Return the WorkItem typename.
+    /// </summary>
+    /// <returns></returns>
+    public static string GetWorkItemTypeName() => WorkItem.GetWorkItemTypeName(typeof(T));
+
+    /// <summary>
+    /// Returns the assigned WIT field name for the given property.
+    /// </summary>
+    /// <typeparam name="TProperty"></typeparam>
+    /// <param name="propertyLambda"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static string GetWorkItemFieldName<TProperty>(Expression<Func<T, TProperty>> propertyLambda)
+    {
+        if (propertyLambda.Body is not MemberExpression member)
+            throw new ArgumentException($"Expression '{propertyLambda}' refers to a method, not a property.");
+        if (member.Member is not PropertyInfo propInfo)
+            throw new ArgumentException($"Expression '{propertyLambda}' refers to a field, not a property.");
+
+        return propInfo.GetCustomAttribute<AzDOFieldAttribute>()?.FieldName ?? string.Empty;
+    }
 }

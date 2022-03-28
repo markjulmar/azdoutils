@@ -46,17 +46,17 @@ namespace AzDOTests
         public void ConverterReturnsEmptyArrayWhenGivenNull()
         {
             var converter = new CommaSeparatedConverter();
-            Assert.Empty((string[])converter.Convert(null, typeof(string[])));
-            Assert.Empty((List<string>)converter.Convert(null, typeof(List<string>)));
+            Assert.Null(converter.Convert(null, typeof(string[])));
+            Assert.Null(converter.Convert(null, typeof(List<string>)));
         }
 
         [Fact]
-        public void ConverterReturnsEmptyStringWhenGivenNull()
+        public void ConverterReturnsNullWhenGivenNull()
         {
             var converter = new CommaSeparatedConverter();
-            Assert.Equal("", converter.ConvertBack(null));
-            Assert.Equal("", converter.ConvertBack(Array.Empty<string>()));
-            Assert.Equal("", converter.ConvertBack(Enumerable.Empty<string>()));
+            Assert.Null(converter.ConvertBack(null));
+            Assert.Equal("",converter.ConvertBack(Array.Empty<string>()));
+            Assert.Equal("",converter.ConvertBack(Enumerable.Empty<string>()));
             Assert.Throws<ArgumentException>(() => converter.ConvertBack(""));
         }
 

@@ -91,7 +91,7 @@ internal class QueryContext<T> : IQueryContext
         const string WhereClause = " WHERE ";
         const string AndClause = " AND ";
 
-        string query = $"SELECT [System.Id] FROM WorkItems";
+        string query = $"SELECT * FROM WorkItems";
 
         if (!string.IsNullOrWhiteSpace(project))
         {

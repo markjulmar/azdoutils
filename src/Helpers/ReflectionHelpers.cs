@@ -131,7 +131,7 @@ internal static class ReflectionHelpers
     {
         foreach (var wi in workItems)
         {
-            var wiType = wi.Fields[Field.WorkItemType].ToString();
+            var wiType = wi.Fields[WorkItemField.WorkItemType].ToString();
             if (!RegisteredTypes.TryGetValue(wiType!, out var wrapperType))
                 wrapperType = typeof(WorkItem);
 

@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
@@ -13,22 +16,6 @@ namespace Julmar.AzDOUtilities;
 /// </summary>
 sealed partial class AzDOService : IAzureDevOpsService
 {
-    private int maxBatchSize = 100;
-
-    /// <summary>
-    /// Max batch size
-    /// </summary>
-    public int MaxBatchSize
-    {
-        get => maxBatchSize;
-        set
-        {
-            if (value is <= 0 or > 200)
-                throw new ArgumentOutOfRangeException(nameof(value));
-            maxBatchSize = value;
-        }
-    }
-
     /// <summary>
     /// Client for the WIT tracking
     /// </summary>
@@ -149,11 +136,8 @@ sealed partial class AzDOService : IAzureDevOpsService
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     internal static string GetRelationshipLinkText(Relationship relationship)
     {
-        string linkType = relationship.GetType().GetField(relationship.ToString())!
-            .GetCustomAttribute<XmlAttributeAttribute>()?.AttributeName ?? "";
-        if (string.IsNullOrEmpty(linkType))
-            throw new ArgumentOutOfRangeException(nameof(relationship), "Must specify a valid relationship type.");
-        return linkType;
+        return relationship.GetType().GetField(relationship.ToString())!
+            .GetCustomAttribute<XmlAttributeAttribute>()?.AttributeName ?? string.Empty;
     }
 
     /// <summary>
@@ -550,10 +534,60 @@ sealed partial class AzDOService : IAzureDevOpsService
     {
         using var mc = log?.Enter(new object?[] { query, top, timePrecision, cancellationToken });
 
-        var workItems = await InternalGetWorkItemsAsync(query, ReflectionHelpers.GetAllFields(this),
+        var getFields = RestrictFieldsToQuery(query, ReflectionHelpers.GetAllFields(this));
+        var workItems = await InternalGetWorkItemsAsync(query, getFields,
                 top, timePrecision, WorkItemExpand.None, ErrorPolicy, cancellationToken)
             .ConfigureAwait(false);
         return ReflectionHelpers.MapWorkItemTypes(workItems);
+    }
+
+    private static string[] requiredFields = {WorkItemField.Id, WorkItemField.Revision, WorkItemField.WorkItemType};
+
+    /// <summary>
+    /// Return a subset of valid fields from the query matched to all available fields.
+    /// </summary>
+    /// <param name="query"></param>
+    /// <param name="allFields"></param>
+    /// <returns></returns>
+    private static string[] RestrictFieldsToQuery(string query, string[] allFields)
+    {
+        Regex queryMatch = new(@"(?i)SELECT\s+(.+?)\s+FROM", RegexOptions.IgnoreCase);
+        var match = queryMatch.Match(query);
+        var possibleFields = new List<string>();
+
+        if (match.Success && !match.Groups[1].Value.Contains('*'))
+        {
+            possibleFields.AddRange(match.Groups[1].Value.Split(',')
+                .Where(f => !string.IsNullOrWhiteSpace(f))
+                .Select(f => f.Trim().TrimStart('[').TrimEnd(']').Trim()));
+
+            foreach (var check in possibleFields.ToList()
+                         .Where(check => !IsRequired(check) && !allFields
+                             .Contains(check, StringComparer.OrdinalIgnoreCase)))
+            {
+                possibleFields.Remove(check);
+            }
+        }
+        else possibleFields.AddRange(allFields);
+
+        // Ensure we always ask for Id, WorkItemType, and Revision.
+        foreach (var required in requiredFields)
+        {
+            if (!possibleFields.Contains(required, StringComparer.OrdinalIgnoreCase))
+                possibleFields.Add(required);
+        }
+        return possibleFields.ToArray();
+    }
+
+    /// <summary>
+    /// Force a specific set of fields to always be allowed.
+    /// </summary>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    private static bool IsRequired(string field)
+    {
+        return requiredFields.Any(item 
+            => string.Compare(field, item, StringComparison.OrdinalIgnoreCase) == 0);
     }
 
     /// <summary>
@@ -579,7 +613,9 @@ sealed partial class AzDOService : IAzureDevOpsService
             ? ReflectionHelpers.GetAllFields(this)
             : ReflectionHelpers.GetQueryFieldsForType(expectedType).AvailableFields(this).ToArray();
 
-        var workItems = await InternalGetWorkItemsAsync(query, typeFields,
+        var getFields = RestrictFieldsToQuery(query, typeFields);
+
+        var workItems = await InternalGetWorkItemsAsync(query, getFields,
                 top, timePrecision, WorkItemExpand.None, ErrorPolicy, cancellationToken)
             .ConfigureAwait(false);
 
@@ -604,7 +640,10 @@ sealed partial class AzDOService : IAzureDevOpsService
         var typeFields =  (typeof(T) == typeof(WorkItem))
             ? ReflectionHelpers.GetAllFields(this)
             : ReflectionHelpers.GetQueryFieldsForType(typeof(T)).AvailableFields(this).ToArray();
-        var workItems = await InternalGetWorkItemsAsync(query, typeFields,
+
+        var getFields = RestrictFieldsToQuery(query, typeFields);
+
+        var workItems = await InternalGetWorkItemsAsync(query, getFields,
                 top, timePrecision, WorkItemExpand.None, ErrorPolicy, cancellationToken)
             .ConfigureAwait(false);
         return workItems.Select(ReflectionHelpers.FromWorkItem<T>);

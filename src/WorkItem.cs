@@ -24,7 +24,7 @@ public class WorkItem : IEquatable<WorkItem>
     /// </summary>
     public WorkItem()
     {
-        WorkItemType = GetWorkItemType(GetType());
+        WorkItemType = GetWorkItemTypeName(GetType());
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class WorkItem : IEquatable<WorkItem>
     /// <summary>
     /// Date this work item was revised.
     /// </summary>
-    [AzDOField(Field.RevisedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.RevisedDate, IsReadOnly = true)]
     public DateTime? RevisedDate { get; protected set; }
 
     /// <summary>
@@ -66,254 +66,254 @@ public class WorkItem : IEquatable<WorkItem>
     /// <summary>
     /// Associated parent id
     /// </summary>
-    [AzDOField(Field.Parent)]
+    [AzDOField(WorkItemField.Parent)]
     public int? ParentId { get; protected set; }
 
     /// <summary>
     /// Activated date for this work item
     /// </summary>
-    [AzDOField(Field.ActivatedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.ActivatedDate, IsReadOnly = true)]
     public DateTime? ActivatedDate { get; protected set; }
 
     /// <summary>
     /// Person who activated this work item
     /// </summary>
-    [AzDOField(Field.ActivatedBy, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.ActivatedBy, Converter = typeof(IdentityRefConverter))]
     public string? ActivatedBy { get; set; }
 
     /// <summary>
     /// Authorization date for this work item
     /// </summary>
-    [AzDOField(Field.AuthorizedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.AuthorizedDate, IsReadOnly = true)]
     public DateTime? AuthorizedDate { get; protected set; }
 
     /// <summary>
     /// Person who authorized this work item
     /// </summary>
-    [AzDOField(Field.AuthorizedAs, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.AuthorizedAs, Converter = typeof(IdentityRefConverter))]
     public string? AuthorizedAs { get; set; }
 
     /// <summary>
     /// Changed date for this work item
     /// </summary>
-    [AzDOField(Field.ChangedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.ChangedDate, IsReadOnly = true)]
     public DateTime? ChangedDate { get; protected set; }
 
     /// <summary>
     /// Board column for this work item.
     /// </summary>
-    [AzDOField(Field.BoardColumn)]
+    [AzDOField(WorkItemField.BoardColumn)]
     public string? BoardColumn { get; set; }
 
     /// <summary>
     /// True if this is done.
     /// </summary>
-    [AzDOField(Field.BoardColumnDone)]
+    [AzDOField(WorkItemField.BoardColumnDone)]
     public bool? BoardColumnDone { get; set; }
 
     /// <summary>
     /// Board lane for this work item.
     /// </summary>
-    [AzDOField(Field.BoardLane)]
+    [AzDOField(WorkItemField.BoardLane)]
     public string? BoardLane { get; set; }
 
     /// <summary>
     /// State changed date
     /// </summary>
-    [AzDOField(Field.StateChangedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.StateChangedDate, IsReadOnly = true)]
     public DateTime? StateChangedDate { get; protected set; }
 
     /// <summary>
     /// Person who created this Work Item
     /// </summary>
-    [AzDOField(Field.CreatedBy, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.CreatedBy, Converter = typeof(IdentityRefConverter))]
     public string? CreatedBy { get; set; }
 
     /// <summary>
     /// Last person who changed this Work Item
     /// </summary>
-    [AzDOField(Field.ChangedBy, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.ChangedBy, Converter = typeof(IdentityRefConverter))]
     public string? ChangedBy { get; set; }
 
     /// <summary>
     /// The date this Work Item was created on
     /// </summary>
-    [AzDOField(Field.CreatedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.CreatedDate, IsReadOnly = true)]
     public DateTime? CreatedDate { get; protected set; }
 
     /// <summary>
     /// The person who closed this Work item. Empty if not closed.
     /// </summary>
-    [AzDOField(Field.ClosedBy, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.ClosedBy, Converter = typeof(IdentityRefConverter))]
     public string? ClosedBy { get; set; }
 
     /// <summary>
     /// Date this work item was closed.
     /// </summary>
-    [AzDOField(Field.ClosedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.ClosedDate, IsReadOnly = true)]
     public DateTime? ClosedDate { get; protected set; }
 
     /// <summary>
     /// Number of comments associated to this work item.
     /// </summary>
-    [AzDOField(Field.CommentCount)]
+    [AzDOField(WorkItemField.CommentCount)]
     public int? CommentCount { get; protected set; }
 
     /// <summary>
     /// Number of related links tied to this work item.
     /// </summary>
-    [AzDOField(Field.RelatedLinkCount)]
+    [AzDOField(WorkItemField.RelatedLinkCount)]
     public int? RelatedLinkCount { get; protected set; }
 
     /// <summary>
     /// Number of external links tied to this work item.
     /// </summary>
-    [AzDOField(Field.ExternalLinkCount)]
+    [AzDOField(WorkItemField.ExternalLinkCount)]
     public int? ExternalLinkCount { get; protected set; }
 
     /// <summary>
     /// Number of hyperlinks tied to this work item.
     /// </summary>
-    [AzDOField(Field.HyperLinkCount)]
+    [AzDOField(WorkItemField.HyperLinkCount)]
     public int? HyperLinkCount { get; protected set; }
 
     /// <summary>
     /// Number of files attached to this work item.
     /// </summary>
-    [AzDOField(Field.AttachedFileCount)]
+    [AzDOField(WorkItemField.AttachedFileCount)]
     public int? AttachedFileCount { get; protected set; }
 
     /// <summary>
     /// Number of remote links tied to this work item.
     /// </summary>
-    [AzDOField(Field.RemoteLinkCount)]
+    [AzDOField(WorkItemField.RemoteLinkCount)]
     public int? RemoteLinkCount { get; protected set; }
 
     /// <summary>
     /// Node name
     /// </summary>
-    [AzDOField(Field.NodeName)]
+    [AzDOField(WorkItemField.NodeName)]
     public string? NodeName { get; protected set; }
 
     /// <summary>
     /// Resolved date for this work item
     /// </summary>
-    [AzDOField(Field.ResolvedDate, IsReadOnly = true)]
+    [AzDOField(WorkItemField.ResolvedDate, IsReadOnly = true)]
     public DateTime? ResolvedDate { get; protected set; }
 
     /// <summary>
     /// Person who resolved this Work Item
     /// </summary>
-    [AzDOField(Field.ResolvedBy, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.ResolvedBy, Converter = typeof(IdentityRefConverter))]
     public string? ResolvedBy { get; set; }
 
     /// <summary>
     /// Resolved reason
     /// </summary>
-    [AzDOField(Field.ResolvedReason)]
+    [AzDOField(WorkItemField.ResolvedReason)]
     public string? ResolvedReason { get; set; }
 
     /// <summary>
     /// Work item type
     /// </summary>
-    [AzDOField(Field.WorkItemType)]
+    [AzDOField(WorkItemField.WorkItemType)]
     public string WorkItemType { get; protected set; }
 
     /// <summary>
     /// Project this work item is tied to
     /// </summary>
-    [AzDOField(Field.Project)] 
+    [AzDOField(WorkItemField.Project)] 
     public string? Project { get; set; }
 
     /// <summary>
     /// History for this work item
     /// </summary>
-    [AzDOField(Field.History, IsReadOnly = true)]
+    [AzDOField(WorkItemField.History, IsReadOnly = true)]
     public string? History { get; protected set; }
 
     /// <summary>
     /// Area path for this work item
     /// </summary>
-    [AzDOField(Field.AreaPath)]
+    [AzDOField(WorkItemField.AreaPath)]
     public string? AreaPath { get; set; }
 
     /// <summary>
     /// Area id for this work item
     /// </summary>
-    [AzDOField(Field.AreaId)]
+    [AzDOField(WorkItemField.AreaId)]
     public int? AreaId { get; set; }
 
     /// <summary>
     /// Iteration path for this work item
     /// </summary>
-    [AzDOField(Field.IterationPath)]
+    [AzDOField(WorkItemField.IterationPath)]
     public string?IterationPath { get; set; }
 
     /// <summary>
     /// Iteration identifier
     /// </summary>
-    [AzDOField(Field.IterationId)]
+    [AzDOField(WorkItemField.IterationId)]
     public int? IterationId { get; set; }
 
     /// <summary>
     /// Stack rank for this item
     /// </summary>
-    [AzDOField(Field.StackRank)]
+    [AzDOField(WorkItemField.StackRank)]
     public double? StackRank { get; set; }
 
     /// <summary>
     /// Title for this work item
     /// </summary>
-    [AzDOField(Field.Title)]
+    [AzDOField(WorkItemField.Title)]
     public string? Title { get; set; }
 
     /// <summary>
     /// Description for this work item
     /// </summary>
-    [AzDOField(Field.Description)]
+    [AzDOField(WorkItemField.Description)]
     public string? Description { get; set; }
 
     /// <summary>
     /// State of the item
     /// </summary>
-    [AzDOField(Field.State)]
+    [AzDOField(WorkItemField.State)]
     public string State { get; set; } = string.Empty;
 
     /// <summary>
     /// Reason for the state
     /// </summary>
-    [AzDOField(Field.Reason)]
+    [AzDOField(WorkItemField.Reason)]
     public string? Reason { get; set; }
 
     /// <summary>
     /// Work item priority
     /// </summary>
-    [AzDOField(Field.Priority)]
+    [AzDOField(WorkItemField.Priority)]
     public int? Priority { get; set; }
 
     /// <summary>
     /// Who this work item is assigned to
     /// </summary>
-    [AzDOField(Field.AssignedTo, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.AssignedTo, Converter = typeof(IdentityRefConverter))]
     public string? AssignedTo { get; set; }
 
     /// <summary>
     /// Who accepted this work item
     /// </summary>
-    [AzDOField(Field.AcceptedBy, Converter = typeof(IdentityRefConverter))]
+    [AzDOField(WorkItemField.AcceptedBy, Converter = typeof(IdentityRefConverter))]
     public string? AcceptedBy { get; set; }
 
     /// <summary>
     /// Watermark.
     /// </summary>
-    [AzDOField(Field.Watermark)]
+    [AzDOField(WorkItemField.Watermark)]
     public int? Watermark { get; set; }
 
     /// <summary>
     /// Optional tags for this work item
     /// </summary>
-    [AzDOField(Field.Tags, Converter = typeof(SemicolonSeparatedConverter))]
-    public List<string> Tags { get; set; } = new();
+    [AzDOField(WorkItemField.Tags, Converter = typeof(SemicolonSeparatedConverter))]
+    public List<string>? Tags { get; set; }
 
     /// <summary>
     /// Initialize a wrapper object from a AzDO WorkItem
@@ -505,17 +505,11 @@ public class WorkItem : IEquatable<WorkItem>
     /// from the server.
     /// </summary>
     /// <returns>Tuple collection of changes.</returns>
-    public IReadOnlyList<(string FieldName, string OldValue, string NewValue)> GatherChangeList()
+    public IReadOnlyList<(string fieldName, string? originalValue, string? currentValue)> GatherChangeList()
     {
-        var changes = new List<(string FieldName, string OldValue, string NewValue)>();
-        ProcessFieldProperties((fieldInfo, initialValue, currentValue, changed) =>
-        {
-            if (changed)
-            {
-                changes.Add((fieldInfo.FieldName,
-                    initialValue?.ToString()?? "(null)",
-                    currentValue?.ToString()?? "(null)"));
-            }
+        var changes = new List<(string fieldName, string? originalValue, string? currentValue)>();
+        ProcessFieldProperties((fieldInfo, initialValue, currentValue, changed) => {
+            if (changed) changes.Add((fieldInfo.FieldName, initialValue?.ToString(), currentValue?.ToString()));
             return true;
         });
         return changes;
@@ -553,7 +547,7 @@ public class WorkItem : IEquatable<WorkItem>
                     // Assign the value to the local property.
                     if (initialValue == null || prop.PropertyType == initialValue.GetType())
                     {
-                        // Don't replace WorkItemType.
+                        // Don't replace WorkItemType with null value.
                         if (prop.Name != nameof(WorkItemType) || initialValue != null)
                             prop.SetValue(this, initialValue);
                     }
@@ -673,7 +667,7 @@ public class WorkItem : IEquatable<WorkItem>
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    protected static string GetWorkItemType(Type type)
+    internal static string GetWorkItemTypeName(Type type)
     {
         return type.GetCustomAttribute<AzDOWorkItemAttribute>()?.WorkItemType ?? string.Empty;
     }

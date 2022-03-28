@@ -8,73 +8,68 @@
 public class BugWorkItem : WorkItem
 {
     /// <summary>
-    /// The work item type string for this work item
-    /// </summary>
-    public static string Type => WorkItem.GetWorkItemType(typeof(EpicWorkItem));
-
-    /// <summary>
     /// Reproduction steps
     /// </summary>
-    [AzDOField(Field.ReproSteps)]
+    [AzDOField(WorkItemField.ReproSteps)]
     public string? ReproSteps { get; set; }
 
     /// <summary>
     /// System information
     /// </summary>
-    [AzDOField(Field.SystemInfo)]
+    [AzDOField(WorkItemField.SystemInfo)]
     public string? SystemInfo { get; set; }
 
     /// <summary>
     /// Story points
     /// </summary>
-    [AzDOField(Field.StoryPoints)]
+    [AzDOField(WorkItemField.StoryPoints)]
     public decimal? StoryPoints { get; set; }
 
     /// <summary>
     /// The type of activity that is required to complete a task.
     /// </summary>
-    [AzDOField(Field.Activity)]
+    [AzDOField(WorkItemField.Activity)]
     public string? Activity { get; set; }
 
     /// <summary>
     /// Severity
     /// </summary>
-    [AzDOField(Field.Severity, Converter = typeof(StringEnumConverter))]
+    [AzDOField(WorkItemField.Severity, Converter = typeof(StringEnumConverter))]
     public BugSeverity? Severity { get; set; }
 
     /// <summary>
     /// Original estimate to fix
     /// </summary>
-    [AzDOField(Field.OriginalEstimate)]
+    [AzDOField(WorkItemField.OriginalEstimate)]
     public decimal? OriginalEstimate { get; set; }
 
     /// <summary>
     /// Remaining work left
     /// </summary>
-    [AzDOField(Field.RemainingWork)]
+    [AzDOField(WorkItemField.RemainingWork)]
     public decimal? RemainingWork { get; set; }
 
     /// <summary>
     /// Completed work
     /// </summary>
-    [AzDOField(Field.CompletedWork)]
+    [AzDOField(WorkItemField.CompletedWork)]
     public decimal? CompletedWork { get; set; }
 
     /// <summary>
     /// Product build number the bug was found in.
     /// </summary>
-    [AzDOField(Field.FoundIn)]
+    [AzDOField(WorkItemField.FoundIn)]
     public string? FoundInBuild { get; set; }
 
     /// <summary>
     /// Product build number the bug was fixed in.
     /// </summary>
-    [AzDOField(Field.IntegrationBuild)]
+    [AzDOField(WorkItemField.IntegrationBuild)]
     public string? FixedInBuild { get; set; }
 
     /// <summary>
     /// Business primarily to represent customer-facing issues.
     /// </summary>
-    [AzDOField(Field.ValueArea)]
+    [AzDOField(WorkItemField.ValueArea)]
     public string? ValueArea { get; set; }
 }

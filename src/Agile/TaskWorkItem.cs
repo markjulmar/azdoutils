@@ -4,47 +4,47 @@
 /// Task work item type
 /// </summary>
 [AzDOWorkItem("Task")]
-public class TaskWorkItem
+public class TaskWorkItem : WorkItem
 {
     /// <summary>
     /// The type of activity that is required to complete a task.
     /// </summary>
-    [AzDOField(Field.Activity)]
+    [AzDOField(WorkItemField.Activity)]
     public string? Activity { get; set; }
 
     /// <summary>
     /// Original estimate to fix
     /// </summary>
-    [AzDOField(Field.OriginalEstimate)]
+    [AzDOField(WorkItemField.OriginalEstimate)]
     public decimal? OriginalEstimate { get; set; }
 
     /// <summary>
     /// Remaining work left
     /// </summary>
-    [AzDOField(Field.RemainingWork)]
+    [AzDOField(WorkItemField.RemainingWork)]
     public decimal? RemainingWork { get; set; }
 
     /// <summary>
     /// Completed work
     /// </summary>
-    [AzDOField(Field.CompletedWork)]
+    [AzDOField(WorkItemField.CompletedWork)]
     public decimal? CompletedWork { get; set; }
 
     /// <summary>
     /// Start date for task.
     /// </summary>
-    [AzDOField(Field.StartDate)]
+    [AzDOField(WorkItemField.StartDate)]
     public DateTime? StartDate { get; set; }
 
     /// <summary>
     /// Finish date for task.
     /// </summary>
-    [AzDOField(Field.FinishDate)]
+    [AzDOField(WorkItemField.FinishDate)]
     public DateTime? FinishDate { get; set; }
 
     /// <summary>
     /// Product build number the task was completed in.
     /// </summary>
-    [AzDOField(Field.IntegrationBuild)]
+    [AzDOField(WorkItemField.IntegrationBuild)]
     public string? IntegrationBuild { get; set; }
 }
