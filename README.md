@@ -7,14 +7,14 @@ The AzDOUtilities library provides a lightweight wrapper around the Azure DevOps
 It's packaged as a [NuGet package](https://www.nuget.org/packages/Julmar.AzDOUtilities/). You can add it to your project with the following command.
 
 ```bash
-dotnet add package Julmar.AzDOUtilities --version 1.6.1-prerelease
+dotnet add package Julmar.AzDOUtilities --version 1.8.4.1-preview
 ```
 
 ## Release notes
 
 | Version | Changes  |
 |---------|----------|
-| **2.0.0.pre** | Move to .NET 6, updated for nullable reference types. Added standard agile work items for Epic, Feature, UserStory, Bug, and Task. |
+| **1.8.4.1-preview** | Move to .NET 6, updated for nullable reference types. Added standard agile work items for Epic, Feature, UserStory, Bug, and Task. |
 | **1.6.1-pre** | Added `ValidFields` to `WorkItem` type to retrieve field names. Added `Connection` to provide underlying access to the `VssConnection` to retrieve other types. |
 | **1.6-pre** | Added new `QueryLinkedRelationshipsAsync` method to retrieve work item links. |
 | **1.5.2-pre** | Added new `GetAsync` to retrieve a set of Ids. |
@@ -37,13 +37,15 @@ using Julmar.AzDOUtilities;
 
 IAzureDevOpsService service = AzureDevOpsFactory.Create("https://myvsts.microsoft.com/", accessToken);
 
-var workItems = await service.QueryAsync("SELECT [Id] FROM [WorkItems] WHERE [System.TeamProject] = 'MyProject'"
+var workItems = await service.QueryAsync("SELECT [System.Title], [System.AssignedTo] FROM [WorkItems] WHERE [System.TeamProject] = 'MyProject'"
 	                                   + " AND [System.State] = 'Closed'");
 foreach (var wi in workItems)
 {
 	Console.WriteLine($"WorkItem: {wi.Id} - {wi.Title} assigned to {wi.AssignedTo}.");
 }
 ```
+
+Notice you specify the fields to retrieve as part of the query. It's recommended to only ask for what you need. All properties in the `WorkItem` type are nullable - anything not asked for won't be returned by the Azure DevOps REST API. If you want the complete object (all fields defined for each instance), you can use `SELECT * FROM [WorkItems]` with any `WHERE` clause to constrain the results.
 
 ## LINQ queries
 
@@ -68,20 +70,22 @@ var query = from wi in db
 var workItems = query.ToList(); // query executed here.
 ```
 
+> **Note:** When using LINQ queries, all fields are always returned by the query. There is no projection support at this time.
+
 ### Creating a custom WorkItem wrapper object
 
 You can define your own WorkItem-type by deriving a class from the `AzDOUtilities.WorkItem` type and adding a `AzDOWorkItem` attribute to tie it to a specific WorkItem type in your Azure DevOps project. It must also have a public, default constructor.
 
-You can tie custom fields to your properties using the `[AzDOUtilities.AzDOField]` attribute. Here's an example:
+You can tie custom fields to your properties using the `[AzDOUtilities.AzDOField]` attribute. All defined fields should be marked as nullable types. Here's an example:
 
 ```csharp
 [AzDOWorkItem("CustomWorkItem")]
 public class CustomWorkItem : WorkItem
 {
     [AzDOField("Custom.LabEnabled")]
-    public bool LabEnabled { get; set; }
+    public bool? LabEnabled { get; set; }
     [AzDOField("Custom.LabType")]
-    public string LabType { get; set; }
+    public string? LabType { get; set; }
     ...
 
     public CustomWorkItem()
@@ -107,7 +111,7 @@ The library can convert intrinsic types without any help, but sometimes you want
 
 ```csharp
 [AzDOField("Custom.CertificationExam", Converter = typeof(CommaSeparatedConverter))]
-public List<string> CertificationExams { get; set; }
+public List<string>? CertificationExams { get; set; }
 ```
 
 > **Note:** `DateTime` values are automatically converted to and from local time from UTC.
